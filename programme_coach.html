@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ProCoach — Ton Programme Sur Mesure</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@300;400;500&family=Lora:ital@0;1&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f9f7f4;--white:#ffffff;--dark:#111;--mid:#2a2a2a;
+  --border:#e4e0d8;--soft:#f0ece4;--muted:#8a8680;
+  --cut:#ff3d00;--bulk:#0052cc;--lean:#00875a;--recomp:#7c3aed;--force:#b45309;--endurance:#0891b2;
+  --acc:#ff3d00;--text:#1a1a1a;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:var(--text);font-family:'Syne',sans-serif;font-weight:400;overflow-x:hidden;}
+
+/* ── TOPBAR ── */
+.topbar{background:var(--dark);padding:0.9rem 2.5rem;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;}
+.tl{font-weight:800;font-size:1.2rem;letter-spacing:-0.02em;color:#fff;}
+.tl span{color:var(--cut);}
+.tr{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:#555;letter-spacing:0.05em;}
+.progress-bar-top{height:3px;background:#222;position:relative;}
+.progress-bar-fill{height:100%;background:var(--acc);width:0%;transition:width 0.5s ease;}
+
+/* ── FORM SHELL ── */
+.form-shell{max-width:960px;margin:0 auto;padding:4rem 2rem 6rem;}
+.step{display:none;}
+.step.on{display:block;animation:fadeUp 0.4s ease both;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px);}to{opacity:1;transform:translateY(0);}}
+
+/* Step header */
+.sh{margin-bottom:2.5rem;}
+.sh-tag{font-family:'JetBrains Mono',monospace;font-size:0.65rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:0.75rem;}
+.sh-title{font-size:clamp(1.8rem,4vw,3rem);font-weight:800;letter-spacing:-0.03em;line-height:1.1;margin-bottom:0.75rem;}
+.sh-sub{font-family:'Lora',serif;font-style:italic;font-size:1rem;color:var(--muted);line-height:1.6;max-width:560px;}
+
+/* Input */
+.ig{margin-bottom:1.5rem;}
+.ig label{display:block;font-size:0.7rem;font-weight:600;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem;}
+.ig input,.ig select{width:100%;padding:0.9rem 1.1rem;border:2px solid var(--border);border-radius:6px;font-family:'Syne',sans-serif;font-size:0.95rem;color:var(--text);background:#fff;outline:none;transition:border-color 0.2s;}
+.ig input:focus,.ig select:focus{border-color:var(--dark);}
+.ig .hint{font-size:0.72rem;color:var(--muted);margin-top:0.4rem;font-family:'JetBrains Mono',monospace;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1.2rem;}
+
+/* Radio pills */
+.pills{display:flex;flex-wrap:wrap;gap:0.6rem;margin-bottom:1.5rem;}
+.pill{padding:0.6rem 1.2rem;border:2px solid var(--border);border-radius:100px;cursor:pointer;font-size:0.82rem;font-weight:600;transition:all 0.15s;background:#fff;color:var(--muted);}
+.pill.sel{border-color:var(--dark);background:var(--dark);color:#fff;}
+.pill input{display:none;}
+
+/* Goal cards */
+.goal-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1px;background:var(--border);}
+.gc{background:#fff;padding:2rem;cursor:pointer;border:3px solid transparent;transition:all 0.2s;position:relative;overflow:hidden;}
+.gc::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;opacity:0;transition:opacity 0.2s;}
+.gc.sel::before{opacity:1;}
+.gc.sel{border-color:transparent;}
+.gc input{display:none;}
+.gc-tag{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.15em;text-transform:uppercase;padding:0.25rem 0.6rem;border-radius:3px;display:inline-block;margin-bottom:1rem;font-weight:500;}
+.gc-name{font-size:1.3rem;font-weight:800;letter-spacing:-0.02em;margin-bottom:0.5rem;}
+.gc-desc{font-size:0.82rem;color:var(--muted);line-height:1.5;margin-bottom:1rem;}
+.gc-stats{display:flex;gap:1rem;}
+.gc-stat{text-align:center;}
+.gc-stat-val{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:1rem;}
+.gc-stat-l{font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;}
+
+/* Muscle grid */
+.muscle-section{margin-bottom:2rem;}
+.muscle-section-title{font-size:0.7rem;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;padding-bottom:0.5rem;border-bottom:1px solid var(--border);}
+.muscle-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;}
+.mcell{border:2px solid var(--border);border-radius:8px;padding:0.9rem;cursor:pointer;text-align:center;background:#fff;transition:all 0.2s;user-select:none;}
+.mcell:hover{border-color:#aaa;}
+.mcell.weak{border-color:var(--cut);background:#fff8f7;}
+.mcell.strong{border-color:var(--lean);background:#f0fdf7;}
+.mcell .mi{font-size:1.6rem;display:block;margin-bottom:0.4rem;}
+.mcell .ml{font-size:0.78rem;font-weight:600;}
+.mcell .ms{font-size:0.62rem;color:var(--muted);margin-top:0.2rem;}
+.muscle-legend{display:flex;gap:1.5rem;margin-bottom:1.5rem;font-size:0.78rem;}
+.ml-item{display:flex;align-items:center;gap:0.5rem;}
+.ml-dot{width:10px;height:10px;border-radius:50%;}
+
+/* Sport cards */
+.sport-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:0.75rem;margin-bottom:1.5rem;}
+.scell{border:2px solid var(--border);border-radius:8px;padding:0.9rem;cursor:pointer;text-align:center;background:#fff;transition:all 0.2s;}
+.scell:hover{border-color:#aaa;}
+.scell.sel{border-color:var(--dark);background:var(--dark);}
+.scell.sel .si,.scell.sel .sl{color:#fff;}
+.scell .si{font-size:1.6rem;display:block;margin-bottom:0.4rem;transition:color 0.2s;}
+.scell .sl{font-size:0.75rem;font-weight:600;transition:color 0.2s;}
+.sport-freq{display:none;margin-top:1rem;padding:1rem;background:var(--soft);border-radius:8px;}
+.sport-freq.on{display:block;}
+
+/* Equipment */
+.eq-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:0.75rem;}
+.eq{border:2px solid var(--border);border-radius:8px;padding:1rem;cursor:pointer;text-align:center;background:#fff;transition:all 0.2s;}
+.eq:hover{border-color:#aaa;}
+.eq.sel{border-color:var(--dark);background:var(--dark);color:#fff;}
+.eq .ei{font-size:1.4rem;display:block;margin-bottom:0.3rem;}
+.eq .el{font-size:0.75rem;font-weight:600;}
+
+/* Nav buttons */
+.btn-row{display:flex;justify-content:space-between;align-items:center;margin-top:3rem;gap:1rem;}
+.btn{padding:0.85rem 2rem;border-radius:6px;font-family:'Syne',sans-serif;font-weight:700;font-size:0.85rem;cursor:pointer;border:none;letter-spacing:0.05em;transition:all 0.2s;}
+.btn-back{background:transparent;border:2px solid var(--border);color:var(--muted);}
+.btn-back:hover{border-color:var(--dark);color:var(--dark);}
+.btn-next{background:var(--dark);color:#fff;}
+.btn-next:hover{background:#333;transform:translateY(-2px);}
+.btn-go{background:var(--cut);color:#fff;font-size:1rem;padding:1rem 2.5rem;}
+.btn-go:hover{background:#e03500;transform:translateY(-2px);}
+
+/* ══════════ RESULTS ══════════ */
+#res{display:none;}
+
+/* Goal banner */
+.goal-banner{padding:5rem 2.5rem 4rem;position:relative;overflow:hidden;}
+.goal-banner::after{content:attr(data-goal);position:absolute;right:-2rem;top:50%;transform:translateY(-50%);font-size:clamp(8rem,20vw,16rem);font-weight:800;opacity:0.04;letter-spacing:-0.05em;line-height:1;pointer-events:none;}
+.gb-inner{max-width:1100px;margin:0 auto;position:relative;}
+.gb-tag{font-family:'JetBrains Mono',monospace;font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;margin-bottom:1rem;display:inline-block;padding:0.3rem 0.8rem;border-radius:3px;}
+.gb-name{font-size:clamp(3rem,8vw,6rem);font-weight:800;letter-spacing:-0.04em;line-height:0.95;margin-bottom:1rem;}
+.gb-sub{font-family:'Lora',serif;font-style:italic;font-size:1.1rem;opacity:0.7;max-width:600px;line-height:1.6;}
+.gb-stats-row{display:flex;flex-wrap:wrap;gap:2px;margin-top:3rem;}
+.gbs{padding:1.8rem 2rem;flex:1;min-width:140px;}
+.gbs-num{font-family:'JetBrains Mono',monospace;font-weight:500;font-size:2.2rem;line-height:1;margin-bottom:0.3rem;}
+.gbs-label{font-size:0.65rem;letter-spacing:0.15em;text-transform:uppercase;opacity:0.6;}
+
+/* Section wrapper */
+.rs{max-width:1100px;margin:0 auto;padding:4rem 2.5rem;}
+.rs-label{font-family:'JetBrains Mono',monospace;font-size:0.62rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:0.6rem;}
+.rs-title{font-size:clamp(1.6rem,3.5vw,2.8rem);font-weight:800;letter-spacing:-0.03em;margin-bottom:1rem;}
+.rs-body{font-size:0.9rem;color:var(--muted);line-height:1.7;max-width:680px;margin-bottom:2.5rem;}
+
+/* Explanation box */
+.explain-box{background:var(--soft);border-left:4px solid var(--dark);border-radius:0 8px 8px 0;padding:1.5rem 2rem;margin-bottom:2rem;font-size:0.88rem;line-height:1.7;}
+.explain-box strong{font-weight:700;color:var(--dark);display:block;margin-bottom:0.4rem;}
+
+/* Macro cards */
+.macro-row{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-bottom:2px;}
+.mac{background:#fff;padding:1.8rem;position:relative;}
+.mac-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1rem;}
+.mac-name{font-size:0.7rem;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);}
+.mac-pct{font-family:'JetBrains Mono',monospace;font-size:0.8rem;font-weight:500;}
+.mac-big{font-size:2.5rem;font-weight:800;letter-spacing:-0.02em;line-height:1;}
+.mac-big span{font-size:1rem;font-weight:400;color:var(--muted);}
+.mac-kcal{font-family:'JetBrains Mono',monospace;font-size:0.78rem;color:var(--muted);margin-top:0.3rem;}
+.mac-bar{height:3px;margin-top:1.2rem;border-radius:2px;overflow:hidden;background:#eee;}
+.mac-fill{height:100%;border-radius:2px;transition:width 1.2s ease;}
+.mac-note{font-size:0.78rem;color:var(--muted);margin-top:0.8rem;line-height:1.5;padding-top:0.8rem;border-top:1px solid var(--border);}
+.cal-box{background:var(--dark);padding:1.8rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:1rem;}
+.cal-big{font-family:'JetBrains Mono',monospace;font-size:3rem;font-weight:500;color:#fff;}
+.cal-big span{font-size:1rem;opacity:0.5;}
+.cal-sub{font-size:0.8rem;color:#777;max-width:400px;line-height:1.6;}
+
+/* Meal plan */
+.meal-list{display:flex;flex-direction:column;gap:1px;background:var(--border);}
+.meal{background:#fff;display:grid;grid-template-columns:90px 1fr auto;gap:1.5rem;padding:1.3rem 1.8rem;align-items:start;}
+.meal-h{font-family:'JetBrains Mono',monospace;font-size:0.85rem;font-weight:500;color:var(--muted);padding-top:0.15rem;}
+.meal-name{font-weight:700;font-size:0.92rem;margin-bottom:0.3rem;}
+.meal-foods{font-size:0.8rem;color:var(--muted);line-height:1.5;}
+.meal-macro{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);margin-top:0.4rem;}
+.meal-kcal-num{font-weight:800;font-size:1.3rem;text-align:right;white-space:nowrap;}
+.meal-kcal-sub{font-size:0.62rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.1em;text-align:right;}
+
+/* WEEK CALENDAR */
+.week-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:1.5rem;}
+.wday{border-radius:6px;padding:0.8rem 0.5rem;min-height:120px;display:flex;flex-direction:column;gap:0.3rem;}
+.wday.rest-day{background:var(--soft);}
+.wday-name{font-family:'JetBrains Mono',monospace;font-size:0.6rem;font-weight:500;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);}
+.wday-label{font-size:0.78rem;font-weight:700;line-height:1.2;margin-top:0.3rem;flex:1;}
+.wday-dur{font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--muted);margin-top:auto;padding-top:0.5rem;}
+.wday-tag{font-size:0.55rem;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;padding:0.15rem 0.4rem;border-radius:3px;display:inline-block;margin-top:0.3rem;}
+
+/* SESSION DETAIL */
+.session-block{background:#fff;border:1px solid var(--border);border-radius:10px;margin-bottom:1.2rem;overflow:hidden;}
+.sb-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;cursor:pointer;user-select:none;}
+.sb-header:hover{background:var(--soft);}
+.sb-title{font-weight:800;font-size:1rem;}
+.sb-meta{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--muted);}
+.sb-body{padding:0;max-height:0;overflow:hidden;transition:max-height 0.4s ease;}
+.sb-body.open{max-height:3000px;}
+.sb-body-inner{padding:1.5rem;}
+
+/* Exercise table */
+.ex-table{width:100%;border-collapse:collapse;font-size:0.83rem;margin-bottom:1rem;}
+.ex-table th{text-align:left;font-size:0.62rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);padding:0.5rem 0.75rem;border-bottom:2px solid var(--border);font-weight:600;}
+.ex-table td{padding:0.75rem;border-bottom:1px solid var(--border);vertical-align:top;}
+.ex-table tr:last-child td{border-bottom:none;}
+.ex-table tr:hover td{background:var(--soft);}
+.ex-name{font-weight:700;}
+.ex-muscles{font-size:0.72rem;color:var(--muted);margin-top:0.2rem;}
+.ex-badge{display:inline-block;font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.2rem 0.5rem;border-radius:3px;white-space:nowrap;}
+.badge-compound{background:#fff3e0;color:#e65100;}
+.badge-isolation{background:#e8f5e9;color:#2e7d32;}
+.badge-cardio{background:#e3f2fd;color:#1565c0;}
+.badge-mobility{background:#f3e5f5;color:#6a1b9a;}
+.badge-hiit{background:#fce4ec;color:#880e4f;}
+.ex-note{font-size:0.72rem;color:var(--muted);font-style:italic;margin-top:0.3rem;}
+.ex-weak-marker{width:4px;border-radius:2px;background:var(--cut);}
+.ex-strong-marker{width:4px;border-radius:2px;background:var(--lean);}
+
+/* Cardio section */
+.cardio-plan{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1px;background:var(--border);}
+.cp-card{background:#fff;padding:2rem;}
+.cp-icon{font-size:2rem;margin-bottom:0.75rem;}
+.cp-title{font-weight:800;font-size:1rem;margin-bottom:0.4rem;}
+.cp-desc{font-size:0.82rem;color:var(--muted);line-height:1.6;margin-bottom:1rem;}
+.cp-stats{display:flex;flex-direction:column;gap:0.5rem;}
+.cp-stat{display:flex;justify-content:space-between;font-size:0.8rem;padding:0.4rem 0;border-bottom:1px solid var(--border);}
+.cp-stat:last-child{border:none;}
+.cp-stat-k{color:var(--muted);}
+.cp-stat-v{font-weight:700;font-family:'JetBrains Mono',monospace;}
+
+/* Advice boxes */
+.advice-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:1rem;}
+.adv{background:#fff;border-radius:8px;padding:1.5rem;border:1px solid var(--border);}
+.adv-icon{font-size:1.5rem;margin-bottom:0.75rem;}
+.adv-title{font-weight:800;font-size:0.95rem;margin-bottom:0.5rem;}
+.adv-body{font-size:0.82rem;color:var(--muted);line-height:1.6;}
+.adv.highlight{border-color:var(--dark);background:var(--dark);color:#fff;}
+.adv.highlight .adv-body{color:#aaa;}
+
+/* Horizontal separator */
+.hsep{height:1px;background:var(--border);max-width:1100px;margin:0 auto;}
+.hsep-full{height:4px;background:var(--dark);}
+
+/* Weak/strong visual */
+.ws-banner{display:flex;flex-wrap:wrap;gap:0.5rem;margin:1rem 0;}
+.ws-tag{padding:0.4rem 0.9rem;border-radius:100px;font-size:0.75rem;font-weight:700;}
+.ws-tag.weak{background:#fff3f0;color:var(--cut);border:1.5px solid var(--cut);}
+.ws-tag.strong{background:#f0fdf5;color:var(--lean);border:1.5px solid var(--lean);}
+.ws-tag.sport{background:#eff6ff;color:var(--bulk);border:1.5px solid var(--bulk);}
+
+/* Phase indicator */
+.phases{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);margin-bottom:2rem;}
+.phase{background:#fff;padding:1.2rem;text-align:center;}
+.phase.active{background:var(--dark);}
+.phase-num{font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);margin-bottom:0.3rem;}
+.phase.active .phase-num{color:#555;}
+.phase-name{font-weight:800;font-size:0.9rem;}
+.phase.active .phase-name{color:#fff;}
+.phase-dur{font-size:0.72rem;color:var(--muted);margin-top:0.2rem;}
+.phase.active .phase-dur{color:#777;}
+
+/* Week tabs */
+.wtabs{display:flex;gap:0;border:1.5px solid var(--border);border-radius:7px;overflow:hidden;margin-bottom:1.5rem;}
+.wtab{flex:1;padding:0.7rem;text-align:center;cursor:pointer;font-size:0.78rem;font-weight:600;background:#fff;color:var(--muted);border-right:1px solid var(--border);transition:all 0.2s;}
+.wtab:last-child{border-right:none;}
+.wtab.active{background:var(--dark);color:#fff;}
+
+/* Reset */
+.reset-btn{display:block;margin:0 auto;background:transparent;border:2px solid var(--border);color:var(--muted);padding:0.75rem 2rem;border-radius:6px;cursor:pointer;font-family:'Syne',sans-serif;font-size:0.82rem;font-weight:600;transition:all 0.2s;}
+.reset-btn:hover{border-color:var(--dark);color:var(--dark);}
+.reset-wrap{padding:4rem;text-align:center;}
+
+/* Science side-note */
+.science-note{background:var(--dark);color:#fff;padding:1.5rem 2rem;border-radius:8px;margin:1.5rem 0;font-size:0.82rem;line-height:1.7;}
+.science-note strong{color:var(--cut);}
+.science-note .sn-title{font-family:'JetBrains Mono',monospace;font-size:0.6rem;letter-spacing:0.2em;text-transform:uppercase;color:#555;margin-bottom:0.5rem;}
+
+/* Responsive */
+@media(max-width:700px){
+  .topbar{padding:0.8rem 1.2rem;}
+  .form-shell{padding:2rem 1.2rem 4rem;}
+  .row2,.row3{grid-template-columns:1fr;}
+  .goal-grid,.macro-row{grid-template-columns:1fr;}
+  .week-cal{grid-template-columns:repeat(4,1fr);}
+  .meal{grid-template-columns:1fr;gap:0.5rem;}
+  .meal-kcal-num,.meal-kcal-sub{text-align:left;}
+  .gb-stats-row .gbs{min-width:100px;}
+  .rs{padding:2.5rem 1.2rem;}
+  .phases{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="tl">PRO<span>COACH</span></div>
+  <div class="tr">PROGRAMME SUR MESURE · AMU STAPS</div>
+</div>
+<div class="progress-bar-top"><div class="progress-bar-fill" id="topbar-prog"></div></div>
+
+<!-- ════════════════════ FORM ════════════════════ -->
+<div class="form-shell">
+
+<!-- STEP 0 : Infos perso -->
+<div class="step on" id="s0">
+  <div class="sh">
+    <div class="sh-tag">01 / 06 — Profil</div>
+    <h1 class="sh-title">Ton profil de base</h1>
+    <p class="sh-sub">Ces données servent à calculer ton métabolisme de base (formule Mifflin-St Jeor) et à personnaliser chaque aspect de ton programme.</p>
+  </div>
+  <div class="row2">
+    <div class="ig"><label>Prénom</label><input id="f-prenom" type="text" placeholder="Ex : Léa"><div class="hint">// Pour personnaliser tes résultats</div></div>
+    <div class="ig"><label>Âge</label><input id="f-age" type="number" min="14" max="80" placeholder="Ex : 22"><div class="hint">// FCmax = 220 − âge</div></div>
+  </div>
+  <div class="row3">
+    <div class="ig"><label>Taille (cm)</label><input id="f-taille" type="number" min="140" max="220" placeholder="Ex : 172"></div>
+    <div class="ig"><label>Poids (kg)</label><input id="f-poids" type="number" min="35" max="280" placeholder="Ex : 70"></div>
+    <div class="ig"><label>Tour de poignée (cm) <span style="font-weight:300;opacity:.6">optionnel</span></label><input id="f-poignet" type="number" min="13" max="22" placeholder="Ex : 16"><div class="hint">// Estime ta morphologie</div></div>
+  </div>
+  <div class="ig">
+    <label>Sexe biologique</label>
+    <div class="pills">
+      <label class="pill" onclick="pill(this,'genre','homme')"><input type="radio" name="genre" value="homme"> 👨 Homme</label>
+      <label class="pill" onclick="pill(this,'genre','femme')"><input type="radio" name="genre" value="femme"> 👩 Femme</label>
+    </div>
+  </div>
+  <div class="ig">
+    <label>Niveau actuel</label>
+    <div class="pills">
+      <label class="pill" onclick="pill(this,'niveau','debutant')"><input type="radio" name="niveau" value="debutant"> 🌱 Débutant (< 1 an)</label>
+      <label class="pill" onclick="pill(this,'niveau','intermediaire')"><input type="radio" name="niveau" value="intermediaire"> 💪 Intermédiaire (1-3 ans)</label>
+      <label class="pill" onclick="pill(this,'niveau','avance')"><input type="radio" name="niveau" value="avance"> 🔥 Avancé (3+ ans)</label>
+    </div>
+  </div>
+  <div class="btn-row"><div></div><button class="btn btn-next" onclick="go(0)">Continuer →</button></div>
+</div>
+
+<!-- STEP 1 : Objectif -->
+<div class="step" id="s1">
+  <div class="sh">
+    <div class="sh-tag">02 / 06 — Objectif</div>
+    <h1 class="sh-title">Qu'est-ce que tu veux devenir ?</h1>
+    <p class="sh-sub">Chaque objectif implique une stratégie calorique, hormonale et d'entraînement radicalement différente.</p>
+  </div>
+  <div class="goal-grid" id="goal-grid">
+    <label class="gc" onclick="pickGoal(this,'sec')" style="--gc:var(--cut)">
+      <input type="radio" name="goal" value="sec">
+      <div class="gc-tag" style="background:#fff0ed;color:var(--cut)">CUTTING / SÈCHE</div>
+      <div class="gc-name">Devenir SEC</div>
+      <div class="gc-desc">Perdre le maximum de gras tout en préservant ta masse musculaire. Idéal si ton IMC > 23 et que tu veux une définition musculaire visible.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--cut)">−400/600</div><div class="gc-stat-l">kcal déficit</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">35%</div><div class="gc-stat-l">Protéines</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">+Cardio</div><div class="gc-stat-l">Hebdomadaire</div></div>
+      </div>
+    </label>
+    <label class="gc" onclick="pickGoal(this,'lean')" style="--gc:var(--lean)">
+      <input type="radio" name="goal" value="lean">
+      <div class="gc-tag" style="background:#f0fdf4;color:var(--lean)">LEAN BULK</div>
+      <div class="gc-name">Prise sèche</div>
+      <div class="gc-desc">Construire du muscle proprement, sans prendre trop de gras. Surplus minimal, progression lente et qualitative. Pour les patients et disciplinés.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--lean)">+200/300</div><div class="gc-stat-l">kcal surplus</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">30%</div><div class="gc-stat-l">Protéines</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">Min.</div><div class="gc-stat-l">Cardio</div></div>
+      </div>
+    </label>
+    <label class="gc" onclick="pickGoal(this,'bulk')" style="--gc:var(--bulk)">
+      <input type="radio" name="goal" value="bulk">
+      <div class="gc-tag" style="background:#eff6ff;color:var(--bulk)">BULK CLASSIQUE</div>
+      <div class="gc-name">Prise de masse</div>
+      <div class="gc-desc">Maximiser les gains musculaires et de force avec un surplus calorique important. On accepte une certaine prise de gras pour alimenter la performance.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--bulk)">+400/600</div><div class="gc-stat-l">kcal surplus</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">28%</div><div class="gc-stat-l">Protéines</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">Réduit</div><div class="gc-stat-l">Cardio</div></div>
+      </div>
+    </label>
+    <label class="gc" onclick="pickGoal(this,'recomp')" style="--gc:var(--recomp)">
+      <input type="radio" name="goal" value="recomp">
+      <div class="gc-tag" style="background:#faf5ff;color:var(--recomp)">RECOMPOSITION</div>
+      <div class="gc-name">Recompo corporelle</div>
+      <div class="gc-desc">Perdre du gras ET gagner du muscle simultanément. Possible principalement chez les débutants, personnes en retour de sport ou avec fort déficit de départ.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--recomp)">= 0</div><div class="gc-stat-l">kcal équilibre</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">30%</div><div class="gc-stat-l">Protéines</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">Modéré</div><div class="gc-stat-l">Cardio</div></div>
+      </div>
+    </label>
+    <label class="gc" onclick="pickGoal(this,'force')" style="--gc:var(--force)">
+      <input type="radio" name="goal" value="force">
+      <div class="gc-tag" style="background:#fef3c7;color:var(--force)">FORCE / POWERLIFTING</div>
+      <div class="gc-name">Gagner en force</div>
+      <div class="gc-desc">Maximiser la force brute sur les mouvements fondamentaux. Charges lourdes, faibles répétitions, récupérations longues. Filière anaérobie alactique dominante.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--force)">+300/500</div><div class="gc-stat-l">kcal surplus</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">30%</div><div class="gc-stat-l">Protéines</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">Minimal</div><div class="gc-stat-l">Cardio</div></div>
+      </div>
+    </label>
+    <label class="gc" onclick="pickGoal(this,'endurance')" style="--gc:var(--endurance)">
+      <input type="radio" name="goal" value="endurance">
+      <div class="gc-tag" style="background:#ecfeff;color:var(--endurance)">ENDURANCE / PERFO</div>
+      <div class="gc-name">Performance & VO₂max</div>
+      <div class="gc-desc">Améliorer ta capacité aérobie, ton économie de course et ta résistance à la fatigue. Filière aérobie et lactique optimisées. Idéal pour coureurs, cyclistes, nageurs.</div>
+      <div class="gc-stats">
+        <div class="gc-stat"><div class="gc-stat-val" style="color:var(--endurance)">+100/200</div><div class="gc-stat-l">kcal surplus</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">22%</div><div class="gc-stat-l">Protéines</div></div>
+        <div class="gc-stat"><div class="gc-stat-val">Dominant</div><div class="gc-stat-l">Cardio</div></div>
+      </div>
+    </label>
+  </div>
+  <div class="btn-row"><button class="btn btn-back" onclick="back(1)">← Retour</button><button class="btn btn-next" onclick="go(1)">Continuer →</button></div>
+</div>
+
+<!-- STEP 2 : Points forts/faibles -->
+<div class="step" id="s2">
+  <div class="sh">
+    <div class="sh-tag">03 / 06 — Morphologie</div>
+    <h1 class="sh-title">Points forts & points faibles</h1>
+    <p class="sh-sub">Clique une fois pour marquer un <strong style="color:var(--cut)">point faible</strong> (volume supplémentaire), deux fois pour un <strong style="color:var(--lean)">point fort</strong> (volume de maintien), trois fois pour réinitialiser.</p>
+  </div>
+  <div class="muscle-legend">
+    <div class="ml-item"><div class="ml-dot" style="background:var(--cut)"></div><span>Point faible — priorité entraînement</span></div>
+    <div class="ml-item"><div class="ml-dot" style="background:var(--lean)"></div><span>Point fort — maintien</span></div>
+    <div class="ml-item"><div class="ml-dot" style="background:var(--border)"></div><span>Neutre</span></div>
+  </div>
+  <div class="muscle-section">
+    <div class="muscle-section-title">Haut du corps — Pousser</div>
+    <div class="muscle-grid">
+      <div class="mcell" onclick="toggleMuscle(this,'pectoraux')" data-m="pectoraux"><span class="mi">🫁</span><div class="ml">Pectoraux</div><div class="ms">Poitrine</div></div>
+      <div class="mcell" onclick="toggleMuscle(this,'epaules')" data-m="epaules"><span class="mi">🦴</span><div class="ml">Épaules</div><div class="ms">Deltoïdes</div></div>
+      <div class="mcell" onclick="toggleMuscle(this,'triceps')" data-m="triceps"><span class="mi">💪</span><div class="ml">Triceps</div><div class="ms">Dos du bras</div></div>
+    </div>
+  </div>
+  <div class="muscle-section">
+    <div class="muscle-section-title">Haut du corps — Tirer</div>
+    <div class="muscle-grid">
+      <div class="mcell" onclick="toggleMuscle(this,'dos')" data-m="dos"><span class="mi">🔙</span><div class="ml">Dos (Lat)</div><div class="ms">Grand dorsal</div></div>
+      <div class="mcell" onclick="toggleMuscle(this,'trapeze')" data-m="trapeze"><span class="mi">🔺</span><div class="ml">Trapèzes</div><div class="ms">Nuque / Rhomboïdes</div></div>
+      <div class="mcell" onclick="toggleMuscle(this,'biceps')" data-m="biceps"><span class="mi">💪</span><div class="ml">Biceps</div><div class="ms">Face avant bras</div></div>
+    </div>
+  </div>
+  <div class="muscle-section">
+    <div class="muscle-section-title">Bas du corps</div>
+    <div class="muscle-grid">
+      <div class="mcell" onclick="toggleMuscle(this,'quadriceps')" data-m="quadriceps"><span class="mi">🦵</span><div class="ml">Quadriceps</div><div class="ms">Face avant cuisse</div></div>
+      <div class="mcell" onclick="toggleMuscle(this,'ischio')" data-m="ischio"><span class="mi">🦵</span><div class="ml">Ischio-jamb.</div><div class="ms">Face arrière cuisse</div></div>
+      <div class="mcell" onclick="toggleMuscle(this,'fessiers')" data-m="fessiers"><span class="mi">🍑</span><div class="ml">Fessiers</div><div class="ms">Gluteus maximus</div></div>
+      <div class="mcell" onclick="toggleMuscle(this,'mollets')" data-m="mollets"><span class="mi">🦶</span><div class="ml">Mollets</div><div class="ms">Gastrocnémiens</div></div>
+    </div>
+  </div>
+  <div class="muscle-section">
+    <div class="muscle-section-title">Core & Stabilisation</div>
+    <div class="muscle-grid">
+      <div class="mcell" onclick="toggleMuscle(this,'abdos')" data-m="abdos"><span class="mi">🏋️</span><div class="ml">Abdominaux</div><div class="ms">Grand droit</div></div>
+      <div class="mcell" onclick="toggleMuscle(this,'lombaires')" data-m="lombaires"><span class="mi">🔄</span><div class="ml">Lombaires</div><div class="ms">Erecteurs du rachis</div></div>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn btn-back" onclick="back(2)">← Retour</button><button class="btn btn-next" onclick="go(2)">Continuer →</button></div>
+</div>
+
+<!-- STEP 3 : Sports -->
+<div class="step" id="s3">
+  <div class="sh">
+    <div class="sh-tag">04 / 06 — Sports pratiqués</div>
+    <h1 class="sh-title">Quels sports fais-tu à côté ?</h1>
+    <p class="sh-sub">Tes sports influencent les muscles déjà sollicités, le cardio à ajouter et la récupération nécessaire. Sélectionne tout ce que tu pratiques régulièrement.</p>
+  </div>
+  <div class="sport-grid" id="sport-grid">
+    <div class="scell" onclick="toggleSport(this,'course')"><span class="si">🏃</span><div class="sl">Course / Running</div></div>
+    <div class="scell" onclick="toggleSport(this,'velo')"><span class="si">🚴</span><div class="sl">Vélo / Cyclisme</div></div>
+    <div class="scell" onclick="toggleSport(this,'natation')"><span class="si">🏊</span><div class="sl">Natation</div></div>
+    <div class="scell" onclick="toggleSport(this,'football')"><span class="si">⚽</span><div class="sl">Football</div></div>
+    <div class="scell" onclick="toggleSport(this,'basketball')"><span class="si">🏀</span><div class="sl">Basketball</div></div>
+    <div class="scell" onclick="toggleSport(this,'tennis')"><span class="si">🎾</span><div class="sl">Tennis / Padel</div></div>
+    <div class="scell" onclick="toggleSport(this,'boxe')"><span class="si">🥊</span><div class="sl">Boxe / MMA</div></div>
+    <div class="scell" onclick="toggleSport(this,'yoga')"><span class="si">🧘</span><div class="sl">Yoga / Pilates</div></div>
+    <div class="scell" onclick="toggleSport(this,'escalade')"><span class="si">🧗</span><div class="sl">Escalade</div></div>
+    <div class="scell" onclick="toggleSport(this,'handball')"><span class="si">🤾</span><div class="sl">Handball / Volley</div></div>
+    <div class="scell" onclick="toggleSport(this,'arts_martiaux')"><span class="si">🥋</span><div class="sl">Arts martiaux</div></div>
+    <div class="scell" onclick="toggleSport(this,'aucun')"><span class="si">🏋️</span><div class="sl">Salle uniquement</div></div>
+  </div>
+  <div class="ig" style="margin-top:1.5rem;">
+    <label>Fréquence de ces sports par semaine</label>
+    <div class="pills">
+      <label class="pill" onclick="pill(this,'freq-sport','1')"><input type="radio" name="freq-sport" value="1"> 1x/sem</label>
+      <label class="pill" onclick="pill(this,'freq-sport','2')"><input type="radio" name="freq-sport" value="2"> 2x/sem</label>
+      <label class="pill" onclick="pill(this,'freq-sport','3')"><input type="radio" name="freq-sport" value="3"> 3x/sem</label>
+      <label class="pill" onclick="pill(this,'freq-sport','4')"><input type="radio" name="freq-sport" value="4"> 4x+/sem</label>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn btn-back" onclick="back(3)">← Retour</button><button class="btn btn-next" onclick="go(3)">Continuer →</button></div>
+</div>
+
+<!-- STEP 4 : Organisation -->
+<div class="step" id="s4">
+  <div class="sh">
+    <div class="sh-tag">05 / 06 — Organisation</div>
+    <h1 class="sh-title">Ton organisation & équipement</h1>
+    <p class="sh-sub">Pour construire un programme réellement faisable dans ta vie quotidienne.</p>
+  </div>
+  <div class="ig">
+    <label>Jours disponibles pour l'entraînement (salle)</label>
+    <div class="pills">
+      <label class="pill" onclick="pill(this,'jours','2')"><input type="radio" name="jours" value="2"> 2 jours</label>
+      <label class="pill" onclick="pill(this,'jours','3')"><input type="radio" name="jours" value="3"> 3 jours</label>
+      <label class="pill" onclick="pill(this,'jours','4')"><input type="radio" name="jours" value="4"> 4 jours</label>
+      <label class="pill" onclick="pill(this,'jours','5')"><input type="radio" name="jours" value="5"> 5 jours</label>
+      <label class="pill" onclick="pill(this,'jours','6')"><input type="radio" name="jours" value="6"> 6 jours</label>
+    </div>
+  </div>
+  <div class="ig">
+    <label>Durée par séance</label>
+    <div class="pills">
+      <label class="pill" onclick="pill(this,'duree','45')"><input type="radio" name="duree" value="45"> 30-45 min</label>
+      <label class="pill" onclick="pill(this,'duree','60')"><input type="radio" name="duree" value="60"> 60 min</label>
+      <label class="pill" onclick="pill(this,'duree','75')"><input type="radio" name="duree" value="75"> 75 min</label>
+      <label class="pill" onclick="pill(this,'duree','90')"><input type="radio" name="duree" value="90"> 90 min</label>
+    </div>
+  </div>
+  <div class="ig">
+    <label>Équipement disponible (sélection multiple)</label>
+    <div class="eq-grid" id="eq-grid">
+      <div class="eq" onclick="toggleEq(this,'salle_complete')"><span class="ei">🏋️</span><div class="el">Salle complète</div></div>
+      <div class="eq" onclick="toggleEq(this,'halteres')"><span class="ei">🏋</span><div class="el">Haltères + Barres</div></div>
+      <div class="eq" onclick="toggleEq(this,'machines')"><span class="ei">⚙️</span><div class="el">Machines guidées</div></div>
+      <div class="eq" onclick="toggleEq(this,'kettlebell')"><span class="ei">⚫</span><div class="el">Kettlebells</div></div>
+      <div class="eq" onclick="toggleEq(this,'barre_traction')"><span class="ei">🔝</span><div class="el">Barre de traction</div></div>
+      <div class="eq" onclick="toggleEq(this,'poids_corps')"><span class="ei">🤸</span><div class="el">Poids de corps</div></div>
+      <div class="eq" onclick="toggleEq(this,'elastiques')"><span class="ei">🎀</span><div class="el">Élastiques</div></div>
+      <div class="eq" onclick="toggleEq(this,'cardio_machine')"><span class="ei">🚵</span><div class="el">Cardio machines</div></div>
+    </div>
+  </div>
+  <div class="ig">
+    <label>Niveau d'activité global (sport + quotidien)</label>
+    <div class="pills">
+      <label class="pill" onclick="pill(this,'activ','1.2')"><input type="radio" name="activ" value="1.2"> 🛋️ Sédentaire (×1.2)</label>
+      <label class="pill" onclick="pill(this,'activ','1.375')"><input type="radio" name="activ" value="1.375"> 🚶 Légèrement actif (×1.375)</label>
+      <label class="pill" onclick="pill(this,'activ','1.55')"><input type="radio" name="activ" value="1.55"> 🏃 Modérément actif (×1.55)</label>
+      <label class="pill" onclick="pill(this,'activ','1.725')"><input type="radio" name="activ" value="1.725"> 💪 Très actif (×1.725)</label>
+      <label class="pill" onclick="pill(this,'activ','1.9')"><input type="radio" name="activ" value="1.9"> 🏆 Extrêmement actif (×1.9)</label>
+    </div>
+  </div>
+  <div class="btn-row"><button class="btn btn-back" onclick="back(4)">← Retour</button><button class="btn btn-next" onclick="go(4)">Continuer →</button></div>
+</div>
+
+<!-- STEP 5 : Confirm -->
+<div class="step" id="s5">
+  <div class="sh">
+    <div class="sh-tag">06 / 06 — Finalisation</div>
+    <h1 class="sh-title">Vérifie tes informations</h1>
+    <p class="sh-sub">Une fois généré, ton programme est entièrement personnalisé et ne peut pas être modifié — relis bien avant de lancer.</p>
+  </div>
+  <div id="recap-box" style="background:#fff;border:1.5px solid var(--border);border-radius:10px;padding:2rem;margin-bottom:2rem;font-size:0.88rem;line-height:2;"></div>
+  <div class="btn-row">
+    <button class="btn btn-back" onclick="back(5)">← Modifier</button>
+    <button class="btn btn-go" onclick="buildResults()">🚀 Générer mon programme complet</button>
+  </div>
+</div>
+
+</div><!-- /form-shell -->
+
+<!-- ════════════════════ RESULTS ════════════════════ -->
+<div id="res">
+
+<!-- GOAL BANNER -->
+<div class="goal-banner" id="gb"></div>
+
+<div class="hsep-full"></div>
+
+<!-- SECTION A : Profil métabolique -->
+<div class="rs">
+  <div class="rs-label">01 — Métabolisme</div>
+  <div class="rs-title">Ton profil métabolique</div>
+  <div class="rs-body" id="rs-meta-intro"></div>
+
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1px;background:var(--border);margin-bottom:2px;">
+    <div style="background:#fff;padding:1.8rem;"><div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;margin-bottom:.4rem;">Métabolisme de base (MB)</div><div id="v-mb" style="font-size:2.5rem;font-weight:800;letter-spacing:-.02em;"></div><div style="font-size:.75rem;color:var(--muted);margin-top:.3rem;">Formule Mifflin-St Jeor</div></div>
+    <div style="background:#fff;padding:1.8rem;"><div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;margin-bottom:.4rem;">Dépense totale (TDEE)</div><div id="v-tdee" style="font-size:2.5rem;font-weight:800;letter-spacing:-.02em;"></div><div style="font-size:.75rem;color:var(--muted);margin-top:.3rem;">MB × facteur activité</div></div>
+    <div style="background:#fff;padding:1.8rem;"><div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;margin-bottom:.4rem;">Objectif calorique</div><div id="v-cible" style="font-size:2.5rem;font-weight:800;letter-spacing:-.02em;"></div><div style="font-size:.75rem;color:var(--muted);margin-top:.3rem;">TDEE ± ajustement objectif</div></div>
+    <div style="background:#fff;padding:1.8rem;"><div style="font-family:'JetBrains Mono',monospace;font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:.15em;margin-bottom:.4rem;">IMC</div><div id="v-imc" style="font-size:2.5rem;font-weight:800;letter-spacing:-.02em;"></div><div id="v-imc-label" style="font-size:.75rem;color:var(--muted);margin-top:.3rem;"></div></div>
+  </div>
+
+  <div class="explain-box" id="explain-goal"></div>
+  <div class="science-note" id="science-hormones"></div>
+
+  <div class="ws-banner" id="ws-banner"></div>
+</div>
+
+<div class="hsep"></div>
+
+<!-- SECTION B : Nutrition -->
+<div class="rs">
+  <div class="rs-label">02 — Nutrition</div>
+  <div class="rs-title">Macronutriments & Nutrition</div>
+  <div class="rs-body" id="rs-nutri-intro"></div>
+
+  <div class="macro-row" id="macro-row"></div>
+  <div class="cal-box" id="cal-box"></div>
+
+  <div style="height:2rem"></div>
+  <div style="font-size:.7rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Plan alimentaire type journalier</div>
+  <div class="meal-list" id="meal-list"></div>
+
+  <div class="science-note" style="margin-top:1.5rem;" id="science-nutrition"></div>
+</div>
+
+<div class="hsep"></div>
+
+<!-- SECTION C : Programme -->
+<div class="rs">
+  <div class="rs-label">03 — Programme d'entraînement</div>
+  <div class="rs-title" id="prog-title">Ton programme hebdomadaire</div>
+  <div class="rs-body" id="prog-intro"></div>
+
+  <div class="phases" id="phases-row"></div>
+
+  <!-- Week tabs -->
+  <div class="wtabs" id="week-tabs"></div>
+  <div id="week-contents"></div>
+</div>
+
+<div class="hsep"></div>
+
+<!-- SECTION D : Cardio -->
+<div class="rs">
+  <div class="rs-label">04 — Cardio & Filières énergétiques</div>
+  <div class="rs-title">Plan cardio personnalisé</div>
+  <div class="rs-body" id="cardio-intro"></div>
+  <div class="cardio-plan" id="cardio-plan"></div>
+  <div class="science-note" style="margin-top:1.5rem;" id="science-cardio"></div>
+</div>
+
+<div class="hsep"></div>
+
+<!-- SECTION E : Récupération & conseils -->
+<div class="rs">
+  <div class="rs-label">05 — Récupération & Conseils</div>
+  <div class="rs-title">Maximiser ta progression</div>
+  <div class="rs-body">La récupération est la phase où ton corps s'adapte. Sans elle, l'entraînement ne sert à rien — c'est la GH nocturne, la synthèse protéique et la régulation du cortisol qui font le travail.</div>
+  <div class="advice-grid" id="advice-grid"></div>
+</div>
+
+<div class="reset-wrap"><button class="reset-btn" onclick="resetAll()">↺ Recommencer avec un nouveau profil</button></div>
+
+</div><!-- /res -->
+
+<script>
+// ══════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════
+const S={
+  prenom:'',age:0,genre:'',niveau:'intermediaire',
+  taille:0,poids:0,poignet:0,
+  goal:'',goalDelta:0,
+  muscles:{},  // name -> 'weak'|'strong'|null
+  sports:[],freqSport:1,
+  jours:3,duree:60,equipement:[],activ:1.55,
+  mb:0,tdee:0,cible:0,imc:0
+};
+
+const goalColors={sec:'var(--cut)',lean:'var(--lean)',bulk:'var(--bulk)',recomp:'var(--recomp)',force:'var(--force)',endurance:'var(--endurance)'};
+const goalDeltas={sec:-500,lean:250,bulk:500,recomp:0,force:400,endurance:150};
+const goalNames={sec:'SÈCHE',lean:'LEAN BULK',bulk:'BULK',recomp:'RECOMP',force:'FORCE',endurance:'ENDURANCE'};
+const goalBg={sec:'#1a0500',lean:'#001a0a',bulk:'#00051a',recomp:'#0a001a',force:'#1a0d00',endurance:'#001518'};
+const goalTxt={sec:'#ff6b45',lean:'#2dd585',bulk:'#4d9fff',recomp:'#b07cff',force:'#f0a832',endurance:'#2ec8de'};
+
+// ══════════════════════════════════════════
+//  FORM NAVIGATION
+// ══════════════════════════════════════════
+let curStep=0;
+function showStep(n){
+  document.querySelectorAll('.step').forEach(s=>s.classList.remove('on'));
+  document.getElementById('s'+n).classList.add('on');
+  document.getElementById('topbar-prog').style.width=(n/5*100)+'%';
+  window.scrollTo({top:0,behavior:'smooth'});
+  curStep=n;
+}
+function go(n){
+  if(!validate(n)) return;
+  if(n===4) buildRecap();
+  showStep(n+1);
+}
+function back(n){showStep(n-1);}
+
+function validate(n){
+  if(n===0){
+    const p=document.getElementById('f-prenom').value.trim();
+    const a=+document.getElementById('f-age').value;
+    const t=+document.getElementById('f-taille').value;
+    const po=+document.getElementById('f-poids').value;
+    const g=document.querySelector('input[name=genre]:checked');
+    const niv=document.querySelector('input[name=niveau]:checked');
+    if(!p){alert('Entre ton prénom !');return false;}
+    if(!a||a<14||a>80){alert('Âge invalide (14-80)');return false;}
+    if(!t||t<140||t>220){alert('Taille invalide');return false;}
+    if(!po||po<35||po>280){alert('Poids invalide');return false;}
+    if(!g){alert('Sélectionne ton sexe');return false;}
+    if(!niv){alert('Sélectionne ton niveau');return false;}
+    S.prenom=p;S.age=a;S.taille=t;S.poids=po;S.genre=g.value;S.niveau=niv.value;
+    S.poignet=+document.getElementById('f-poignet').value||16;
+    return true;
+  }
+  if(n===1){
+    const g=document.querySelector('input[name=goal]:checked');
+    if(!g){alert('Sélectionne ton objectif');return false;}
+    S.goal=g.value;S.goalDelta=goalDeltas[S.goal];
+    return true;
+  }
+  if(n===2){return true;}
+  if(n===3){
+    const f=document.querySelector('input[name=freq-sport]:checked');
+    S.freqSport=f?+f.value:1;
+    return true;
+  }
+  if(n===4){
+    const j=document.querySelector('input[name=jours]:checked');
+    const d=document.querySelector('input[name=duree]:checked');
+    const a=document.querySelector('input[name=activ]:checked');
+    if(!j){alert('Sélectionne tes jours disponibles');return false;}
+    if(!d){alert('Sélectionne la durée de séance');return false;}
+    if(!a){alert('Sélectionne ton niveau d\'activité');return false;}
+    S.jours=+j.value;S.duree=+d.value;S.activ=+a.value;
+    if(!S.equipement.length) S.equipement=['salle_complete'];
+    return true;
+  }
+  return true;
+}
+
+// ── UI helpers ──
+function pill(el,name,val){
+  document.querySelectorAll(`input[name="${name}"]`).forEach(r=>r.parentElement.classList.remove('sel'));
+  el.classList.add('sel');
+}
+function pickGoal(el,v){
+  document.querySelectorAll('.gc').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  el.style.borderColor=goalColors[v]||'transparent';
+  el.querySelector('.gc::before');
+}
+function toggleMuscle(el,name){
+  const states=['','weak','strong'];
+  const cur=el.classList.contains('weak')?1:el.classList.contains('strong')?2:0;
+  const next=(cur+1)%3;
+  el.classList.remove('weak','strong');
+  if(next===1){el.classList.add('weak');S.muscles[name]='weak';}
+  else if(next===2){el.classList.add('strong');S.muscles[name]='strong';}
+  else{delete S.muscles[name];}
+}
+function toggleSport(el,name){
+  el.classList.toggle('sel');
+  if(el.classList.contains('sel')){if(!S.sports.includes(name))S.sports.push(name);}
+  else{S.sports=S.sports.filter(s=>s!==name);}
+}
+function toggleEq(el,name){
+  el.classList.toggle('sel');
+  if(el.classList.contains('sel')){if(!S.equipement.includes(name))S.equipement.push(name);}
+  else{S.equipement=S.equipement.filter(e=>e!==name);}
+}
+
+function buildRecap(){
+  const weakMs=Object.entries(S.muscles).filter(([,v])=>v==='weak').map(([k])=>k);
+  const strongMs=Object.entries(S.muscles).filter(([,v])=>v==='strong').map(([k])=>k);
+  document.getElementById('recap-box').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;font-size:.85rem;">
+      <div><strong>Prénom :</strong> ${S.prenom}</div><div><strong>Âge :</strong> ${S.age} ans</div>
+      <div><strong>Taille :</strong> ${S.taille} cm</div><div><strong>Poids :</strong> ${S.poids} kg</div>
+      <div><strong>Sexe :</strong> ${S.genre}</div><div><strong>Niveau :</strong> ${S.niveau}</div>
+      <div><strong>Objectif :</strong> <span style="color:${goalColors[S.goal]};font-weight:800;">${goalNames[S.goal]}</span></div>
+      <div><strong>Activité :</strong> ×${S.activ}</div>
+      <div><strong>Jours/sem :</strong> ${S.jours}</div><div><strong>Durée/séance :</strong> ${S.duree} min</div>
+      <div><strong>Points faibles :</strong> ${weakMs.length?weakMs.join(', '):'Aucun'}</div>
+      <div><strong>Points forts :</strong> ${strongMs.length?strongMs.join(', '):'Aucun'}</div>
+      <div><strong>Sports :</strong> ${S.sports.length?S.sports.join(', '):'Salle uniquement'}</div>
+      <div><strong>Équipement :</strong> ${S.equipement.join(', ')||'Non défini'}</div>
+    </div>`;
+}
+
+// ══════════════════════════════════════════
+//  RESULTS BUILDER
+// ══════════════════════════════════════════
+function buildResults(){
+  // Calc
+  let mb;
+  if(S.genre==='homme') mb=10*S.poids+6.25*S.taille-5*S.age+5;
+  else mb=10*S.poids+6.25*S.taille-5*S.age-161;
+  S.mb=Math.round(mb);
+  S.tdee=Math.round(mb*S.activ);
+  S.cible=S.tdee+S.goalDelta;
+  S.imc=+(S.poids/((S.taille/100)**2)).toFixed(1);
+
+  document.querySelector('.form-shell').style.display='none';
+  document.getElementById('res').style.display='block';
+  document.getElementById('topbar-prog').style.width='100%';
+
+  renderBanner();
+  renderMeta();
+  renderNutrition();
+  renderProgram();
+  renderCardio();
+  renderAdvice();
+
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── BANNER ──
+function renderBanner(){
+  const gb=document.getElementById('gb');
+  const col=goalColors[S.goal]||'var(--cut)';
+  const bg=goalBg[S.goal]||'#1a0500';
+  const txtc=goalTxt[S.goal]||'#ff6b45';
+  const goalExplainers={
+    sec:`Objectif : perdre du gras en préservant le muscle. Déficit calorique de ~${Math.abs(S.goalDelta)} kcal.`,
+    lean:`Objectif : construire du muscle proprement. Surplus minimal de ~${S.goalDelta} kcal.`,
+    bulk:`Objectif : maximiser la masse et la force. Surplus de ~${S.goalDelta} kcal.`,
+    recomp:`Objectif : recomposition corporelle à calories d'entretien.`,
+    force:`Objectif : gains de force maximaux sur les mouvements de base.`,
+    endurance:`Objectif : améliorer VO₂max et la résistance à la fatigue.`,
+  };
+  gb.style.background=bg;
+  gb.setAttribute('data-goal',goalNames[S.goal]);
+  gb.innerHTML=`
+    <div class="gb-inner">
+      <div class="gb-tag" style="background:${col}20;color:${txtc};">${goalNames[S.goal]}</div>
+      <div class="gb-name" style="color:${txtc};">${S.prenom}'s<br>Program.</div>
+      <div class="gb-sub" style="color:${txtc}80;">${goalExplainers[S.goal]}</div>
+      <div class="gb-stats-row" style="background:${bg};">
+        <div class="gbs" style="background:${col}15;"><div class="gbs-num" style="color:${txtc};">${S.mb}<span style="font-size:1rem;"> kcal</span></div><div class="gbs-label" style="color:${txtc}60;">Métabolisme base</div></div>
+        <div class="gbs" style="background:${col}15;"><div class="gbs-num" style="color:${txtc};">${S.tdee}<span style="font-size:1rem;"> kcal</span></div><div class="gbs-label" style="color:${txtc}60;">TDEE</div></div>
+        <div class="gbs" style="background:${col}15;"><div class="gbs-num" style="color:${txtc};">${S.cible}<span style="font-size:1rem;"> kcal</span></div><div class="gbs-label" style="color:${txtc}60;">Objectif quotidien</div></div>
+        <div class="gbs" style="background:${col}15;"><div class="gbs-num" style="color:${txtc};">${S.imc}</div><div class="gbs-label" style="color:${txtc}60;">IMC</div></div>
+        <div class="gbs" style="background:${col}15;"><div class="gbs-num" style="color:${txtc};">${S.jours}j</div><div class="gbs-label" style="color:${txtc}60;">Séances/semaine</div></div>
+      </div>
+    </div>`;
+}
+
+// ── META ──
+function renderMeta(){
+  const fcmax=220-S.age;
+  const imc=S.imc;
+  const imcLabel=imc<18.5?'Sous-poids (attention aux déficits)':imc<25?'Poids normal ✓':imc<30?'Surpoids modéré':imc<35?'Obésité classe I':'Obésité classe II+';
+
+  document.getElementById('v-mb').textContent=S.mb+' kcal';
+  document.getElementById('v-tdee').textContent=S.tdee+' kcal';
+  document.getElementById('v-cible').textContent=S.cible+' kcal';
+  document.getElementById('v-imc').textContent=imc;
+  document.getElementById('v-imc-label').textContent=imcLabel;
+
+  const goalExplainerLong={
+    sec:`<strong>Stratégie SÈCHE :</strong> Déficit calorique de ${Math.abs(S.goalDelta)} kcal/j pour perdre ~${(Math.abs(S.goalDelta)*7/7700).toFixed(2)} kg de gras par semaine. Les protéines sont élevées (2.2g/kg) pour préserver la masse musculaire malgré le déficit. Le cortisol sera élevé — la gestion du stress et du sommeil sont critiques. Le cardio complémentaire augmente le déficit sans toucher aux calories.`,
+    lean:`<strong>Stratégie LEAN BULK :</strong> Surplus de seulement ${S.goalDelta} kcal/j pour maximiser la synthèse protéique sans excès de lipogenèse. La GH (pic nocturne) et la testostérone sont optimisées par un entraînement de force progressif. Progression attendue : 0.5-1 kg de muscle par mois.`,
+    bulk:`<strong>Stratégie BULK :</strong> Surplus de ${S.goalDelta} kcal/j pour alimenter la synthèse protéique maximale et les performances à l'entraînement. L'insuline (stimulée par les glucides) active la translocation GLUT4 ×15-20 dans les muscles et favorise l'anabolisme. Accepter 30-40% de prise de gras en accompagnement.`,
+    recomp:`<strong>Stratégie RECOMPOSITION :</strong> À calories d'entretien, le corps peut simultanément perdre du gras et gagner du muscle grâce à la mobilisation des triglycérides intramusculaires et à la synthèse protéique stimulée par l'entraînement. Optimal chez les débutants où les adaptations neuronales et hormonales sont maximales.`,
+    force:`<strong>Stratégie FORCE :</strong> Surplus de ${S.goalDelta} kcal/j pour alimenter les filières phosphagènes (ATP-PCr). L'entraînement lourd à faibles reps stimule les adaptations neurales (recrutement moteur, synchronisation), puis structurelles (hypertrophie myofibrillaire). La testostérone et l'IGF-1 sont maximisées par les exercices poly-articulaires lourds.`,
+    endurance:`<strong>Stratégie ENDURANCE :</strong> Surplus léger de ${S.goalDelta} kcal/j pour soutenir l'adaptation cardiovasculaire sans surcharge pondérale. Priorité aux glucides (substrat filière aérobie). Le BDNF est stimulé par l'exercice aérobie — neuroplasticité et adaptation mitochondriale améliorées.`,
+  };
+  document.getElementById('explain-goal').innerHTML=goalExplainerLong[S.goal]||'';
+
+  const hormoneNotes={
+    sec:`<div class="sn-title">⚗️ Mécanisme hormonal — SÈCHE</div>En phase de sèche, <strong>le cortisol augmente</strong> avec le déficit calorique → protéolyse et lipolyse. Pour contrer : protéines élevées + entraînement de résistance. <strong>L'adrénaline</strong> mobilise les acides gras du tissu adipeux via la glycogénolyse. <strong>La GH</strong> (pic nocturne) protège la masse musculaire — priorité absolue au sommeil 7-9h.`,
+    lean:`<div class="sn-title">⚗️ Mécanisme hormonal — LEAN BULK</div><strong>L'insuline</strong> (stimulée par les glucides post-entraînement) active GLUT4 ×15-20 dans les cellules musculaires. <strong>La GH et l'IGF-1</strong> (stimulées par l'entraînement intense + sommeil) favorisent la synthèse protéique. Éviter les glucides simples en dehors des fenêtres péri-entraînement pour minimiser la lipogenèse.`,
+    bulk:`<div class="sn-title">⚗️ Mécanisme hormonal — BULK</div>Surplus calorique → <strong>insuline chroniquement élevée</strong> → synthèse protéique maximale + lipogenèse. <strong>Testostérone et GH</strong> maximisées par les exercices poly-articulaires lourds (squat, soulevé de terre). Le glucagon est supprimé en état post-prandial — l'environnement hormonal est optimal pour l'anabolisme.`,
+    recomp:`<div class="sn-title">⚗️ Mécanisme hormonal — RECOMP</div>La <strong>lipolyse des triglycérides</strong> intramusculaires fournit de l'énergie pour l'effort, tandis que la <strong>synthèse protéique</strong> est stimulée par l'entraînement (via mTOR). Mécanismes possibles simultanément grâce à la régulation insulinique (faible à jeun, élevée post-repas).`,
+    force:`<div class="sn-title">⚗️ Mécanisme hormonal — FORCE</div>L'entraînement lourd stimule massivement <strong>la testostérone, la GH et l'IGF-1</strong>. La filière anaérobie alactique (ATP-PCr, 0-10 sec) est la filière dominante. La PCr est resynthétisée en 2-3 min — d'où les longues récupérations (3-5 min entre séries lourdes). <strong>La créatine monohydrate</strong> augmente les stocks de PCr de 10-20%.`,
+    endurance:`<div class="sn-title">⚗️ Mécanisme hormonal — ENDURANCE</div>L'exercice aérobie prolongé stimule la production de <strong>BDNF</strong> → neurogenèse hippocampique. Les <strong>mitochondries</strong> prolifèrent (biogenèse mitochondriale via PGC-1α). À 70% VO₂max après 4h, 62% de l'énergie vient des lipides — les réserves glycogéniques sont épargnées. Le glucagon et la GH mobilisent les acides gras.`,
+  };
+  document.getElementById('science-hormones').innerHTML=hormoneNotes[S.goal]||'';
+  document.getElementById('rs-meta-intro').textContent=`FC max estimée : ${fcmax} bpm. IMC : ${imc} (${imcLabel.split(' ')[0]}). Morphologie estimée selon l'indice de Ectomorphie. Déficit/surplus appliqué : ${S.goalDelta >= 0 ? '+' : ''}${S.goalDelta} kcal/j.`;
+
+  // WS banner
+  const weakMs=Object.entries(S.muscles).filter(([,v])=>v==='weak').map(([k])=>k);
+  const strongMs=Object.entries(S.muscles).filter(([,v])=>v==='strong').map(([k])=>k);
+  let html='';
+  weakMs.forEach(m=>html+=`<div class="ws-tag weak">⬆ ${m} (priorité)</div>`);
+  strongMs.forEach(m=>html+=`<div class="ws-tag strong">✓ ${m} (maintien)</div>`);
+  S.sports.filter(s=>s!=='aucun').forEach(s=>html+=`<div class="ws-tag sport">⚽ ${s}</div>`);
+  document.getElementById('ws-banner').innerHTML=html;
+}
+
+// ── NUTRITION ──
+function renderNutrition(){
+  const kcal=S.cible;
+  const macroRatios={
+    sec:{p:0.35,g:0.35,l:0.30},lean:{p:0.30,g:0.45,l:0.25},
+    bulk:{p:0.28,g:0.50,l:0.22},recomp:{p:0.32,g:0.40,l:0.28},
+    force:{p:0.30,g:0.48,l:0.22},endurance:{p:0.18,g:0.57,l:0.25}
+  };
+  const r=macroRatios[S.goal]||macroRatios.recomp;
+  const pKcal=Math.round(kcal*r.p),gKcal=Math.round(kcal*r.g),lKcal=kcal-pKcal-gKcal;
+  const pG=Math.round(pKcal/4),gG=Math.round(gKcal/4),lG=Math.round(lKcal/9);
+  const colP='var(--cut)',colG='var(--bulk)',colL='var(--lean)';
+
+  const macroNotes={
+    sec:{p:'2.2g/kg poids · Préservation musculaire en déficit · Viandes maigres, œufs, fromage blanc, whey',g:'Féculents complexes uniquement · Autour de l\'entraînement · Éviter le soir',l:'Acides gras essentiels · Huile olive, avocats, noix · Limitée en quantité'},
+    lean:{p:'1.8g/kg · Stimulation synthèse protéique · Viandes, poissons, légumineuses',g:'Carburant principal · Riz, pâtes, patate douce · Peak post-entraînement',l:'Hormones stéroïdes · Oméga-3 prioritaires · Poissons gras, huile olive'},
+    bulk:{p:'1.8-2g/kg · Substrat anabolique · Quantité sur la durée',g:'Carburant filières FAA/FAL · Volume élevé · Pas de restriction temporelle',l:'Minimum physiologique · Modérer pour contrôler la prise de gras'},
+    recomp:{p:'2.0-2.2g/kg · Critique pour la recomp · Stimulation mTOR sans surplus calorique',g:'Cyclique recommandé : haut les jours d\'entraînement, bas les jours de repos',l:'Hormones sexuelles · Modéré · Principalement insaturés'},
+    force:{p:'1.8-2g/kg · Réparation myofibrilles · Fenêtre de 30 min post-entraînement',g:'Carburant glycogène · Resynthèse après séances lourdes · Amidon résistant',l:'Essentiels · Oméga-3 anti-inflammatoires · Acides gras saturés modérés'},
+    endurance:{p:'1.4-1.6g/kg · Prévention surentraînement · Asides aminés branchés (BCAA)',g:'Dominant · Substrat filière aérobie · Glycogène musculaire à maximiser',l:'Réserve d\'énergie à faible intensité · Entraîner le corps à les oxyder'}
+  };
+  const mn=macroNotes[S.goal]||macroNotes.recomp;
+
+  document.getElementById('macro-row').innerHTML=`
+    <div class="mac"><div class="mac-top"><div class="mac-name">Protéines</div><div class="mac-pct" style="color:${colP}">${Math.round(r.p*100)}%</div></div><div class="mac-big" style="color:${colP}">${pG}<span>g/j</span></div><div class="mac-kcal">${pKcal} kcal · ${(pG/S.poids).toFixed(1)}g/kg</div><div class="mac-bar"><div class="mac-fill" style="background:${colP};width:${r.p*100}%"></div></div><div class="mac-note">${mn.p}</div></div>
+    <div class="mac"><div class="mac-top"><div class="mac-name">Glucides</div><div class="mac-pct" style="color:${colG}">${Math.round(r.g*100)}%</div></div><div class="mac-big" style="color:${colG}">${gG}<span>g/j</span></div><div class="mac-kcal">${gKcal} kcal</div><div class="mac-bar"><div class="mac-fill" style="background:${colG};width:${r.g*100}%"></div></div><div class="mac-note">${mn.g}</div></div>
+    <div class="mac"><div class="mac-top"><div class="mac-name">Lipides</div><div class="mac-pct" style="color:${colL}">${Math.round(r.l*100)}%</div></div><div class="mac-big" style="color:${colL}">${lG}<span>g/j</span></div><div class="mac-kcal">${lKcal} kcal</div><div class="mac-bar"><div class="mac-fill" style="background:${colL};width:${r.l*100}%"></div></div><div class="mac-note">${mn.l}</div></div>`;
+
+  const kcalCtx={sec:'Déficit de '+Math.abs(S.goalDelta)+' kcal/j → perte estimée de '+(Math.abs(S.goalDelta)*7/7700).toFixed(2)+' kg/sem',lean:'Surplus de '+S.goalDelta+' kcal/j → gain estimé 0.5-1 kg muscle/mois',bulk:'Surplus de '+S.goalDelta+' kcal/j → gain total estimé 1-2 kg/mois',recomp:'Calories d\'entretien → recomposition progressive',force:'Surplus de '+S.goalDelta+' kcal/j → support performance force',endurance:'Léger surplus → adaptation aérobie optimale'};
+  document.getElementById('cal-box').innerHTML=`<div><div class="cal-big">${kcal}<span> kcal/jour</span></div><div style="font-size:.7rem;color:#555;font-family:'JetBrains Mono',monospace;margin-top:.3rem;">${kcalCtx[S.goal]||''}</div></div><div class="cal-sub">Hydratation : ${(S.poids*0.033).toFixed(1)}L/j au repos · +500ml/h d'effort · +1L récupération post-séance</div>`;
+
+  // Meals
+  const mealData=buildMeals(kcal,S.goal,pG,gG,lG);
+  document.getElementById('meal-list').innerHTML=mealData.map(m=>`
+    <div class="meal">
+      <div class="meal-h">${m.h}</div>
+      <div><div class="meal-name">${m.name}</div><div class="meal-foods">${m.foods}</div><div class="meal-macro">${m.macro}</div></div>
+      <div><div class="meal-kcal-num">${m.kcal}</div><div class="meal-kcal-sub">kcal</div></div>
+    </div>`).join('');
+
+  document.getElementById('science-nutrition').innerHTML=`<div class="sn-title">🍽️ Chronologie nutritionnelle & filières</div>Avant l'effort : glucides complexes 2h avant → glycogène = substrat FAL. Pendant l'effort > 60 min : 30-60g glucides/h (gel, boisson isotonique). Après l'effort : fenêtre anabolique 30-45 min → ${Math.round(pG*0.25)}g protéines + ${Math.round(gG*0.20)}g glucides → translocation GLUT4, synthèse protéique (insuline + GH). Soir : protéines lentes (caséine) pour maintenir la balance azotée nocturne pendant le pic de GH.`;
+  document.getElementById('rs-nutri-intro').textContent=`Répartition macronutriments optimisée pour l'objectif ${goalNames[S.goal]}. Les proportions tiennent compte des filières énergétiques sollicitées par ton programme.`;
+}
+
+function buildMeals(kcal,goal,pG,gG,lG){
+  const p=[0.22,0.10,0.30,0.13,0.25];
+  const meals={
+    sec:[
+      {h:'7h30',name:'Petit-déjeuner protéiné',foods:'4 blancs d\'œuf + 1 œuf entier · Flocons avoine 40g · Fromage blanc 0% 150g · Baies 80g',macro:`P: ${Math.round(pG*0.28)}g · G: ${Math.round(gG*0.18)}g · L: ${Math.round(lG*0.15)}g`},
+      {h:'10h30',name:'Collation anti-catabolisme',foods:'Whey isolat 25g · Amandes 15g · Pomme verte 1',macro:`P: ${Math.round(pG*0.15)}g · G: ${Math.round(gG*0.10)}g · L: ${Math.round(lG*0.12)}g`},
+      {h:'12h30',name:'Déjeuner (repas principal)',foods:'Poulet grillé 180g · Riz brun 80g · Légumes verts 200g · Huile d\'olive 1cs',macro:`P: ${Math.round(pG*0.30)}g · G: ${Math.round(gG*0.35)}g · L: ${Math.round(lG*0.25)}g`},
+      {h:'16h00',name:'Pré-entraînement',foods:'Banane 1 · Riz en galette 2 · Café noir (si toléré)',macro:`P: ${Math.round(pG*0.08)}g · G: ${Math.round(gG*0.22)}g · L: ${Math.round(lG*0.05)}g`},
+      {h:'19h30',name:'Dîner post-entraînement',foods:'Saumon 160g · Patate douce 120g · Brocolis vapeur · Fromage blanc 0% 100g',macro:`P: ${Math.round(pG*0.19)}g · G: ${Math.round(gG*0.15)}g · L: ${Math.round(lG*0.43)}g`},
+    ],
+    lean:[
+      {h:'7h30',name:'Petit-déjeuner complet',foods:'3 œufs entiers · Flocons avoine 60g · Lait demi-écrémé 200ml · Banane · Miel 1cs',macro:`P: ${Math.round(pG*0.22)}g · G: ${Math.round(gG*0.22)}g · L: ${Math.round(lG*0.20)}g`},
+      {h:'10h30',name:'Collation qualitative',foods:'Yaourt grec nature 200g · Noix 20g · Fruit de saison',macro:`P: ${Math.round(pG*0.12)}g · G: ${Math.round(gG*0.10)}g · L: ${Math.round(lG*0.15)}g`},
+      {h:'12h30',name:'Déjeuner équilibré',foods:'Viande/poisson 150g · Pâtes complètes 90g · Salade composée · Vinaigrette olive',macro:`P: ${Math.round(pG*0.28)}g · G: ${Math.round(gG*0.32)}g · L: ${Math.round(lG*0.25)}g`},
+      {h:'16h00',name:'Pré/Post-workout',foods:'Riz soufflé 40g · Whey 25g · Banane 1 · Eau 500ml',macro:`P: ${Math.round(pG*0.15)}g · G: ${Math.round(gG*0.18)}g · L: ${Math.round(lG*0.08)}g`},
+      {h:'19h30',name:'Dîner anabolique',foods:'Bœuf haché 5% 170g · Riz basmati 100g · Légumes sautés · Fromage 30g',macro:`P: ${Math.round(pG*0.23)}g · G: ${Math.round(gG*0.18)}g · L: ${Math.round(lG*0.32)}g`},
+    ],
+    bulk:[
+      {h:'7h30',name:'Petit-déjeuner massive',foods:'4 œufs entiers + 2 blancs · Flocons avoine 80g · Lait entier 250ml · Banane · Beurre de cacahuète 2cs',macro:`P: ${Math.round(pG*0.22)}g · G: ${Math.round(gG*0.22)}g · L: ${Math.round(lG*0.28)}g`},
+      {h:'10h30',name:'Collation calorique',foods:'Pain complet 2 tranches · Thon 100g · Avocat ½ · Fromage',macro:`P: ${Math.round(pG*0.15)}g · G: ${Math.round(gG*0.12)}g · L: ${Math.round(lG*0.20)}g`},
+      {h:'12h30',name:'Déjeuner volume',foods:'Steak 200g · Riz 130g · Légumes · Huile d\'olive 2cs · Pain complet',macro:`P: ${Math.round(pG*0.30)}g · G: ${Math.round(gG*0.35)}g · L: ${Math.round(lG*0.25)}g`},
+      {h:'16h00',name:'Shake pré-training',foods:'Whey 35g · Avoine 50g · Lait · Banane · Créatine 5g',macro:`P: ${Math.round(pG*0.18)}g · G: ${Math.round(gG*0.15)}g · L: ${Math.round(lG*0.08)}g`},
+      {h:'20h00',name:'Dîner + dessert',foods:'Poulet 200g · Pâtes 150g · Sauce tomate · Pain · Fromage blanc + confiture',macro:`P: ${Math.round(pG*0.15)}g · G: ${Math.round(gG*0.16)}g · L: ${Math.round(lG*0.19)}g`},
+    ],
+    recomp:[
+      {h:'7h30',name:'Petit-déj. protéiné modéré',foods:'3 œufs brouillés · Flocons avoine 50g · Fromage blanc 0% 150g · Fruits rouges',macro:`P: ${Math.round(pG*0.24)}g · G: ${Math.round(gG*0.20)}g · L: ${Math.round(lG*0.18)}g`},
+      {h:'10h30',name:'Collation légère',foods:'Fromage blanc 120g · Amandes 12g · Pomme',macro:`P: ${Math.round(pG*0.13)}g · G: ${Math.round(gG*0.08)}g · L: ${Math.round(lG*0.10)}g`},
+      {h:'12h30',name:'Déjeuner complet',foods:'Poisson maigre 150g · Quinoa 80g · Légumineuses 60g · Légumes crus',macro:`P: ${Math.round(pG*0.28)}g · G: ${Math.round(gG*0.35)}g · L: ${Math.round(lG*0.22)}g`},
+      {h:'16h00',name:'Fenêtre anabolique',foods:'Whey 25g · Riz soufflé 30g · Banane',macro:`P: ${Math.round(pG*0.15)}g · G: ${Math.round(gG*0.17)}g · L: ${Math.round(lG*0.06)}g`},
+      {h:'19h30',name:'Dîner équilibré',foods:'Poulet 150g · Patate douce 100g · Salade verte · Huile d\'olive · Caséine HS si dispo',macro:`P: ${Math.round(pG*0.20)}g · G: ${Math.round(gG*0.20)}g · L: ${Math.round(lG*0.44)}g`},
+    ],
+    force:[
+      {h:'7h30',name:'Petit-déj. force',foods:'4 œufs entiers · Pain complet 80g · Fromage · Jus d\'orange · Café',macro:`P: ${Math.round(pG*0.22)}g · G: ${Math.round(gG*0.20)}g · L: ${Math.round(lG*0.25)}g`},
+      {h:'10h30',name:'Collation performance',foods:'Fromage cottage 200g · Noix · Fruit · Créatine 5g',macro:`P: ${Math.round(pG*0.15)}g · G: ${Math.round(gG*0.10)}g · L: ${Math.round(lG*0.15)}g`},
+      {h:'12h30',name:'Déjeuner force',foods:'Bœuf 200g · Riz 120g · Légumes cuits · Huile d\'olive',macro:`P: ${Math.round(pG*0.30)}g · G: ${Math.round(gG*0.38)}g · L: ${Math.round(lG*0.28)}g`},
+      {h:'15h30',name:'Pré-entraînement force',foods:'Riz + miel 50g · Whey 20g · Café ou pré-workout naturel',macro:`P: ${Math.round(pG*0.13)}g · G: ${Math.round(gG*0.17)}g · L: ${Math.round(lG*0.05)}g`},
+      {h:'19h30',name:'Dîner récupération',foods:'Saumon 180g ou œufs · Patate douce 130g · Légumes · Caséine 25g avant dodo',macro:`P: ${Math.round(pG*0.20)}g · G: ${Math.round(gG*0.15)}g · L: ${Math.round(lG*0.27)}g`},
+    ],
+    endurance:[
+      {h:'6h30',name:'Avant sortie matinale',foods:'Banane · Toast + confiture · Jus d\'orange · Eau 300ml',macro:`P: ${Math.round(pG*0.10)}g · G: ${Math.round(gG*0.25)}g · L: ${Math.round(lG*0.05)}g`},
+      {h:'9h00',name:'Récup post-effort',foods:'Yaourt + céréales · Fruit · Whey 20g · Eau + électrolytes',macro:`P: ${Math.round(pG*0.18)}g · G: ${Math.round(gG*0.20)}g · L: ${Math.round(lG*0.10)}g`},
+      {h:'12h30',name:'Déjeuner énergétique',foods:'Pâtes 120g + sauce tomate viande · Salade · Pain complet',macro:`P: ${Math.round(pG*0.25)}g · G: ${Math.round(gG*0.30)}g · L: ${Math.round(lG*0.22)}g`},
+      {h:'16h00',name:'Collation pré-séance 2',foods:'Barre énergétique maison · Dattes · Eau 400ml',macro:`P: ${Math.round(pG*0.08)}g · G: ${Math.round(gG*0.15)}g · L: ${Math.round(lG*0.08)}g`},
+      {h:'19h30',name:'Dîner récupération',foods:'Saumon + légumes rôtis · Quinoa · Huile d\'olive · Fromage blanc',macro:`P: ${Math.round(pG*0.39)}g · G: ${Math.round(gG*0.10)}g · L: ${Math.round(lG*0.55)}g`},
+    ],
+  };
+  const base=meals[S.goal]||meals.recomp;
+  return base.map((m,i)=>({...m,kcal:Math.round(kcal*p[i])}));
+}
+
+// ── PROGRAM ──
+function renderProgram(){
+  const fcmax=220-S.age;
+  document.getElementById('prog-title').textContent=`Programme ${S.jours}j/sem — ${goalNames[S.goal]}`;
+
+  // Phases
+  const phaseData={
+    sec:[{n:'Phase 1',dur:'Sem 1-3',desc:'Adaptation volumique'},{n:'Phase 2',dur:'Sem 4-6',desc:'Déficit + intensité'},{n:'Phase 3',dur:'Sem 7-10',desc:'Peak sèche'}],
+    lean:[{n:'Phase 1',dur:'Sem 1-4',desc:'Construction base'},{n:'Phase 2',dur:'Sem 5-8',desc:'Progression charge'},{n:'Phase 3',dur:'Sem 9-12',desc:'Surcharge progressive'}],
+    bulk:[{n:'Phase 1',dur:'Sem 1-4',desc:'Base volumique'},{n:'Phase 2',dur:'Sem 5-8',desc:'Force + Hypertrophie'},{n:'Phase 3',dur:'Sem 9-12',desc:'Volume maximal'}],
+    recomp:[{n:'Phase 1',dur:'Sem 1-4',desc:'Réadaptation'},{n:'Phase 2',dur:'Sem 5-10',desc:'Recomp active'},{n:'Phase 3',dur:'Sem 11-16',desc:'Consolidation'}],
+    force:[{n:'Phase 1',dur:'Sem 1-4',desc:'Technique + base'},{n:'Phase 2',dur:'Sem 5-8',desc:'Force maximale'},{n:'Phase 3',dur:'Sem 9-12',desc:'Peak de force'}],
+    endurance:[{n:'Phase 1',dur:'Sem 1-4',desc:'Base aérobie'},{n:'Phase 2',dur:'Sem 5-8',desc:'Seuil lactique'},{n:'Phase 3',dur:'Sem 9-12',desc:'VMA & performance'}],
+  };
+  const phases=phaseData[S.goal]||phaseData.recomp;
+  document.getElementById('phases-row').innerHTML=phases.map((ph,i)=>`
+    <div class="phase ${i===0?'active':''}">
+      <div class="phase-num">Phase ${i+1}</div>
+      <div class="phase-name">${ph.n}</div>
+      <div class="phase-dur">${ph.dur} · ${ph.desc}</div>
+    </div>`).join('');
+
+  // Build 3 weeks
+  const weeks=buildWeeks(S.goal,S.jours,S.niveau,S.muscles,S.sports,fcmax);
+  const tabsEl=document.getElementById('week-tabs');
+  const contEl=document.getElementById('week-contents');
+  tabsEl.innerHTML='';contEl.innerHTML='';
+
+  weeks.forEach((w,i)=>{
+    const tab=document.createElement('div');
+    tab.className='wtab'+(i===0?' active':'');
+    tab.textContent=w.name;
+    tab.onclick=()=>{
+      document.querySelectorAll('.wtab').forEach((t,j)=>t.classList.toggle('active',j===i));
+      document.querySelectorAll('.week-panel').forEach((p,j)=>p.classList.toggle('on',j===i));
+    };
+    tabsEl.appendChild(tab);
+    const panel=document.createElement('div');
+    panel.className='week-panel step'+(i===0?' on':'');
+    panel.innerHTML=renderWeekPanel(w,fcmax);
+    contEl.appendChild(panel);
+  });
+
+  document.getElementById('prog-intro').textContent=`Split adapté : ${getSplitName(S.jours,S.goal)}. Objectif filière : ${getFiliere(S.goal)}. Volume ajusté selon tes points faibles/forts. Sports pris en compte pour la récupération.`;
+}
+
+function getSplitName(jours,goal){
+  if(goal==='force') return jours<=3?'Full Body Powerlifting':'Upper/Lower Force';
+  if(goal==='endurance') return 'Programme Endurance Structuré';
+  if(jours===2) return 'Full Body A/B';
+  if(jours===3) return 'Full Body 3j ou Push/Pull/Legs';
+  if(jours===4) return 'Upper/Lower × 2';
+  if(jours===5) return 'Push/Pull/Legs + Upper/Lower';
+  return 'PPL × 2 ou Spécialisation';
+}
+function getFiliere(goal){
+  const f={sec:'Aérobie (FA) + Anaérobie Lactique (FAL)',lean:'FAA + FAL (Force-Hypertrophie)',bulk:'FAA dominante (charges lourdes)',recomp:'FA + FAL équilibrées',force:'FAA exclusive (ATP-PCr, 0-10 sec)',endurance:'FA dominante + seuil lactique'};
+  return f[goal]||'Mixte';
+}
+
+function buildWeeks(goal,jours,niveau,muscles,sports,fcmax){
+  const weekNames=['Semaine 1 — Fondation','Semaine 2 — Progression','Semaine 3 — Intensification'];
+  return weekNames.map((name,wi)=>({
+    name,
+    days:buildWeekDays(goal,jours,niveau,muscles,sports,fcmax,wi)
+  }));
+}
+
+function buildWeekDays(goal,jours,niveau,muscles,sports,fcmax,weekIdx){
+  const dayNames=['Lun','Mar','Mer','Jeu','Ven','Sam','Dim'];
+  const weakMs=Object.entries(muscles).filter(([,v])=>v==='weak').map(([k])=>k);
+  const strongMs=Object.entries(muscles).filter(([,v])=>v==='strong').map(([k])=>k);
+  const hasSport=sports.filter(s=>s!=='aucun').length>0;
+  const sportDays=hasSport?2:0;
+
+  // Get sessions for this goal/jours combo
+  const sessions=getSessions(goal,jours,niveau,weakMs,strongMs,sports,fcmax,weekIdx);
+  const positions=getPositions(jours,sportDays,hasSport);
+
+  return dayNames.map((dn,di)=>{
+    const sp=positions.find(p=>p.day===di);
+    if(sp&&sp.type==='sport'){
+      return {name:dn,type:'sport',label:'Sport pratiqué',detail:sports.filter(s=>s!=='aucun').join(' + ')||'Sport',dur:'Variable',cls:'cardio-day',color:'var(--endurance)',sessions:[]};
+    }
+    if(sp&&sp.type==='train'){
+      const sess=sessions[sp.idx]||{label:'Repos',detail:'Récup active',dur:'—',exercises:[]};
+      return {name:dn,type:'train',...sess};
+    }
+    return {name:dn,type:'rest',label:'Repos',detail:'Récupération — étirements, sommeil, nutrition',dur:'—',cls:'rest-day',color:'#ddd',sessions:[]};
+  });
+}
+
+function getPositions(jours,sportDays,hasSport){
+  const templates={
+    2:[{day:1,type:'train',idx:0},{day:4,type:'train',idx:1}],
+    3:[{day:0,type:'train',idx:0},{day:2,type:'train',idx:1},{day:4,type:'train',idx:2}],
+    4:[{day:0,type:'train',idx:0},{day:1,type:'train',idx:1},{day:3,type:'train',idx:2},{day:4,type:'train',idx:3}],
+    5:[{day:0,type:'train',idx:0},{day:1,type:'train',idx:1},{day:2,type:'train',idx:2},{day:4,type:'train',idx:3},{day:5,type:'train',idx:4}],
+    6:[{day:0,type:'train',idx:0},{day:1,type:'train',idx:1},{day:2,type:'train',idx:2},{day:4,type:'train',idx:3},{day:5,type:'train',idx:4},{day:6,type:'train',idx:5}],
+  };
+  let pos=templates[jours]||templates[3];
+  if(hasSport&&jours<=4){
+    pos=[...pos,{day:3,type:'sport',idx:-1}];
+    if(jours<=3) pos=[...pos,{day:6,type:'sport',idx:-1}];
+  }
+  return pos;
+}
+
+function getSessions(goal,jours,niveau,weakMs,strongMs,sports,fcmax,wi){
+  const extra=wi===1?'+5%':wi===2?'+10%':'';
+  const EX=getExerciseDB(weakMs,strongMs,sports);
+
+  const splits={
+    sec:{
+      2:[
+        {label:'Full Body Force A',detail:'Priorité maintien muscle + cardio finisher',dur:'60 min',cls:'active-day',color:'var(--cut)',exercises:EX.fullBodyA('sec',niveau,'',weakMs)},
+        {label:'Full Body Force B + Cardio',detail:'Circuit + 20 min LISS en fin',dur:'70 min',cls:'active-day',color:'var(--cut)',exercises:EX.fullBodyB('sec',niveau,'',weakMs)},
+      ],
+      3:[
+        {label:'Haut du corps — Force',detail:'Composés lourds · Maintien masse musculaire',dur:'55 min',cls:'active-day',color:'var(--cut)',exercises:EX.upperForce('sec',niveau,weakMs)},
+        {label:'Bas du corps + Core',detail:'Squats · Deadlifts · Abdos',dur:'55 min',cls:'active-day',color:'var(--cut)',exercises:EX.lowerCore('sec',niveau,weakMs)},
+        {label:'Full Body Circuit + Cardio',detail:'Séance métabolique brûle-graisses',dur:'60 min',cls:'mixed-day',color:'var(--cut)',exercises:EX.metabolic('sec',niveau,weakMs)},
+      ],
+      4:[
+        {label:'Push (Poussée)',detail:'Pectoraux · Épaules · Triceps',dur:'55 min',cls:'active-day',color:'var(--cut)',exercises:EX.push('sec',niveau,weakMs)},
+        {label:'Pull (Tirage)',detail:'Dos · Biceps · Trapezes',dur:'55 min',cls:'active-day',color:'var(--cut)',exercises:EX.pull('sec',niveau,weakMs)},
+        {label:'Legs (Jambes)',detail:'Quadriceps · Ischio · Fessiers · Mollets',dur:'60 min',cls:'active-day',color:'var(--cut)',exercises:EX.legs('sec',niveau,weakMs)},
+        {label:'Full Body Cardio',detail:'Séance mixte + finisher cardio 20 min',dur:'65 min',cls:'mixed-day',color:'var(--cut)',exercises:EX.cardioSession(fcmax)},
+      ],
+      5:[
+        {label:'Pectoraux + Triceps',detail:'Hypertrophie avec volume de sèche',dur:'55 min',cls:'active-day',color:'var(--cut)',exercises:EX.chestTriceps('sec',niveau,weakMs)},
+        {label:'Dos + Biceps',detail:'Tirage vertical et horizontal + curl',dur:'55 min',cls:'active-day',color:'var(--cut)',exercises:EX.backBiceps('sec',niveau,weakMs)},
+        {label:'Jambes',detail:'Squats · Leg press · Ischio · Mollets',dur:'60 min',cls:'active-day',color:'var(--cut)',exercises:EX.legs('sec',niveau,weakMs)},
+        {label:'Épaules + Core',detail:'Deltoïdes · Gainage · Abdos',dur:'50 min',cls:'active-day',color:'var(--cut)',exercises:EX.shouldersCore('sec',niveau,weakMs)},
+        {label:'Cardio + Points faibles',detail:'HIIT 20min + isolation pts faibles',dur:'60 min',cls:'mixed-day',color:'var(--cut)',exercises:EX.cardioWeak(fcmax,weakMs)},
+      ],
+    },
+    lean:{
+      3:[
+        {label:'Push — Pectoraux · Épaules · Triceps',detail:'Force pure + volume modéré',dur:'65 min',cls:'active-day',color:'var(--lean)',exercises:EX.push('lean',niveau,weakMs)},
+        {label:'Pull — Dos · Biceps · Trapèzes',detail:'Tirage composés + isolation',dur:'65 min',cls:'active-day',color:'var(--lean)',exercises:EX.pull('lean',niveau,weakMs)},
+        {label:'Legs — Full Bas du corps',detail:'Squat lourd + isolation + gainage',dur:'70 min',cls:'active-day',color:'var(--lean)',exercises:EX.legs('lean',niveau,weakMs)},
+      ],
+      4:[
+        {label:'Upper A — Force',detail:'Composés prioritaires · 4×5-6',dur:'65 min',cls:'active-day',color:'var(--lean)',exercises:EX.upperForce('lean',niveau,weakMs)},
+        {label:'Lower A — Force',detail:'Squat + Deadlift · 4×5-6',dur:'70 min',cls:'active-day',color:'var(--lean)',exercises:EX.lowerCore('lean',niveau,weakMs)},
+        {label:'Upper B — Hypertrophie',detail:'Volume · 4×10-12 · Isolation',dur:'60 min',cls:'active-day',color:'var(--lean)',exercises:EX.upperHyp(niveau,weakMs)},
+        {label:'Lower B — Hypertrophie',detail:'Volume · 4×10-12 · Isolation',dur:'60 min',cls:'active-day',color:'var(--lean)',exercises:EX.lowerHyp(niveau,weakMs)},
+      ],
+      5:[
+        {label:'Pectoraux + Triceps',detail:'Push · Force + Volume · 4×6-10',dur:'65 min',cls:'active-day',color:'var(--lean)',exercises:EX.chestTriceps('lean',niveau,weakMs)},
+        {label:'Dos + Biceps',detail:'Pull · Force + Volume · 4×6-10',dur:'65 min',cls:'active-day',color:'var(--lean)',exercises:EX.backBiceps('lean',niveau,weakMs)},
+        {label:'Jambes complètes',detail:'Quad · Ischio · Fessier · Mollets',dur:'70 min',cls:'active-day',color:'var(--lean)',exercises:EX.legs('lean',niveau,weakMs)},
+        {label:'Épaules + Arms',detail:'Deltoïdes prioritaires + biceps/triceps',dur:'55 min',cls:'active-day',color:'var(--lean)',exercises:EX.shouldersArms(niveau,weakMs)},
+        {label:'Points faibles prioritaires',detail:`Séance dédiée ${weakMs.length?weakMs.join(', '):'full body'}`,dur:'55 min',cls:'mixed-day',color:'var(--lean)',exercises:EX.weakPoint(niveau,weakMs)},
+      ],
+    },
+    bulk:{
+      3:[
+        {label:'Full Body A — Lourd',detail:'Composés · 5×5 · Force maximale',dur:'70 min',cls:'active-day',color:'var(--bulk)',exercises:EX.fullBodyHeavy(niveau,weakMs)},
+        {label:'Full Body B — Volume',detail:'Hypertrophie · 4×8-10',dur:'70 min',cls:'active-day',color:'var(--bulk)',exercises:EX.fullBodyVolume(niveau,weakMs)},
+        {label:'Full Body C — Pump',detail:'Isolation + volume élevé · 3×12-15',dur:'60 min',cls:'active-day',color:'var(--bulk)',exercises:EX.fullBodyPump(niveau,weakMs)},
+      ],
+      4:[
+        {label:'Push Lourd — Pecto + Épaules + Triceps',detail:'5×5 puis 3×8 · Volume élevé',dur:'70 min',cls:'active-day',color:'var(--bulk)',exercises:EX.push('bulk',niveau,weakMs)},
+        {label:'Pull Lourd — Dos + Biceps + Trapezes',detail:'5×5 puis 3×8 · Tirage massif',dur:'70 min',cls:'active-day',color:'var(--bulk)',exercises:EX.pull('bulk',niveau,weakMs)},
+        {label:'Legs Lourd',detail:'Squat 5×5 · Leg press · Développé couchés + isolation',dur:'75 min',cls:'active-day',color:'var(--bulk)',exercises:EX.legs('bulk',niveau,weakMs)},
+        {label:'Full Body Pump & Points faibles',detail:'Séance de volume pump + isolation pts faibles',dur:'60 min',cls:'mixed-day',color:'var(--bulk)',exercises:EX.pumpWeak(niveau,weakMs)},
+      ],
+      5:[
+        {label:'Pectoraux — Volume massif',detail:'6 exercices · 4×8-12 · Pompes finisher',dur:'70 min',cls:'active-day',color:'var(--bulk)',exercises:EX.chestTriceps('bulk',niveau,weakMs)},
+        {label:'Dos — Volume massif',detail:'6 exercices · 4×8-12 · Tractions finisher',dur:'70 min',cls:'active-day',color:'var(--bulk)',exercises:EX.backBiceps('bulk',niveau,weakMs)},
+        {label:'Jambes',detail:'Squat lourd + volume isolation',dur:'75 min',cls:'active-day',color:'var(--bulk)',exercises:EX.legs('bulk',niveau,weakMs)},
+        {label:'Épaules + Trapèzes',detail:'Développé militaire lourd + isolation complète',dur:'60 min',cls:'active-day',color:'var(--bulk)',exercises:EX.shouldersTraps(niveau,weakMs)},
+        {label:'Arms + Core',detail:'Biceps + Triceps complets + gainage lourd',dur:'55 min',cls:'active-day',color:'var(--bulk)',exercises:EX.armsCore(niveau,weakMs)},
+      ],
+    },
+    force:{
+      3:[
+        {label:'Squat Day',detail:'Squat · accessoires bas · core',dur:'80 min',cls:'active-day',color:'var(--force)',exercises:EX.squatDay(niveau)},
+        {label:'Bench Day',detail:'Développé couché · accessoires haut',dur:'75 min',cls:'active-day',color:'var(--force)',exercises:EX.benchDay(niveau)},
+        {label:'Deadlift Day',detail:'Soulevé de terre · accessoires',dur:'80 min',cls:'active-day',color:'var(--force)',exercises:EX.deadliftDay(niveau)},
+      ],
+      4:[
+        {label:'Lower A — Squat focus',detail:'5×5 Squat + accessoires',dur:'80 min',cls:'active-day',color:'var(--force)',exercises:EX.squatDay(niveau)},
+        {label:'Upper A — Bench focus',detail:'5×5 Bench + accessoires push',dur:'75 min',cls:'active-day',color:'var(--force)',exercises:EX.benchDay(niveau)},
+        {label:'Lower B — Deadlift focus',detail:'5×3 Deadlift + accessoires',dur:'80 min',cls:'active-day',color:'var(--force)',exercises:EX.deadliftDay(niveau)},
+        {label:'Upper B — OHP focus',detail:'5×5 Press militaire + accessoires pull',dur:'70 min',cls:'active-day',color:'var(--force)',exercises:EX.ohpDay(niveau)},
+      ],
+    },
+    endurance:{
+      3:[
+        {label:'Fractionné court — FAL',detail:`Intervals : 8×400m ou 10×1min · FC ${Math.round(fcmax*0.85)}-${Math.round(fcmax*0.92)} bpm`,dur:'45 min',cls:'cardio-day',color:'var(--endurance)',exercises:EX.intervales(fcmax)},
+        {label:'Renforcement spécifique',detail:'Gainage · Jambes · Fessiers · Proprioception',dur:'50 min',cls:'active-day',color:'var(--endurance)',exercises:EX.strengthEndurance(niveau)},
+        {label:'Sortie longue — FA',detail:`Course continue 60-90 min · FC ${Math.round(fcmax*0.62)}-${Math.round(fcmax*0.70)} bpm · Filière aérobie`,dur:'80 min',cls:'cardio-day',color:'var(--endurance)',exercises:EX.longRun(fcmax)},
+      ],
+      4:[
+        {label:'VMA — Vitesse Maximale Aérobie',detail:`5×1000m à 95% VMA · Récup 2-3 min · FC ${Math.round(fcmax*0.90)}-${Math.round(fcmax*0.95)} bpm`,dur:'55 min',cls:'cardio-day',color:'var(--endurance)',exercises:EX.vma(fcmax)},
+        {label:'Force spécifique coureur',detail:'Squat · Fentes · Mollets · Core · Pliométrie',dur:'55 min',cls:'active-day',color:'var(--endurance)',exercises:EX.strengthEndurance(niveau)},
+        {label:'Tempo Run — Seuil lactique',detail:`30-40 min à ${Math.round(fcmax*0.80)}-${Math.round(fcmax*0.85)} bpm · Seuil anaérobie`,dur:'50 min',cls:'cardio-day',color:'var(--endurance)',exercises:EX.tempo(fcmax)},
+        {label:'Sortie longue régénérative',detail:`75-90 min à ${Math.round(fcmax*0.62)}-${Math.round(fcmax*0.68)} bpm · Brûlage graisses`,dur:'85 min',cls:'cardio-day',color:'var(--endurance)',exercises:EX.longRun(fcmax)},
+      ],
+    },
+    recomp:{
+      3:[
+        {label:'Full Body Force A',detail:'Composés · 4×8 · RPE 7-8',dur:'60 min',cls:'active-day',color:'var(--recomp)',exercises:EX.fullBodyA('recomp',niveau,'',weakMs)},
+        {label:'Cardio + Core',detail:'LISS 30 min + 20 min gainage',dur:'55 min',cls:'mixed-day',color:'var(--recomp)',exercises:EX.cardioCore(fcmax)},
+        {label:'Full Body Force B',detail:'Composés + isolation · 4×8-10',dur:'60 min',cls:'active-day',color:'var(--recomp)',exercises:EX.fullBodyB('recomp',niveau,'',weakMs)},
+      ],
+      4:[
+        {label:'Upper A',detail:'Force haut du corps · 4×6-8',dur:'60 min',cls:'active-day',color:'var(--recomp)',exercises:EX.upperForce('recomp',niveau,weakMs)},
+        {label:'Lower A + Cardio',detail:'Bas du corps + 20 min cardio',dur:'70 min',cls:'mixed-day',color:'var(--recomp)',exercises:EX.lowerCore('recomp',niveau,weakMs)},
+        {label:'Upper B Hyp',detail:'Volume haut · 4×10-12',dur:'60 min',cls:'active-day',color:'var(--recomp)',exercises:EX.upperHyp(niveau,weakMs)},
+        {label:'Lower B + Cardio',detail:'Volume bas + 20 min HIIT',dur:'65 min',cls:'mixed-day',color:'var(--recomp)',exercises:EX.lowerHyp(niveau,weakMs)},
+      ],
+    }
+  };
+
+  const goalSplit=splits[goal]||splits.recomp;
+  const jStr=jours.toString();
+  let sArr=goalSplit[jStr]||goalSplit['3']||Object.values(goalSplit)[0]||[];
+  return sArr.slice(0,jours);
+}
+
+// ── EXERCISE DB ──
+function getExerciseDB(weakMs,strongMs,sports){
+  const nb=n=>n;
+  // Helper to add extra sets for weak muscles
+  function ex(name,muscles,type,sets,reps,rest,note='',isWeak=false){
+    const extraSets=isWeak?1:0;
+    return {name,muscles,type,sets:sets+extraSets,reps,rest,note};
+  }
+  function isWeak(m){return weakMs.some(w=>m.toLowerCase().includes(w.toLowerCase()));}
+  function isSport(s){return sports.includes(s);}
+
+  return {
+    push(goal,niv,weakMs){
+      const heavy=goal==='bulk'||goal==='force';
+      const sets=heavy?5:4;
+      const repsMain=heavy?'5-6':'8-10';
+      const repsIso='12-15';
+      return[
+        {name:'Développé couché Barre',muscles:'Pectoraux · Triceps · Deltoïdes ant.',type:'compound',sets,reps:repsMain,rest:'2-3 min',note:'Prise légèrement + large que les épaules · Coudes à 45-75°',isWeakBoost:isWeak('pectoraux')},
+        {name:'Développé incliné Haltères (30-45°)',muscles:'Pectoraux sup. · Deltoïdes ant.',type:'compound',sets:4,reps:'8-12',rest:'2 min',note:'Priorité si pectoraux = point faible · Étirement complet en bas',isWeakBoost:isWeak('pectoraux')},
+        {name:'Développé militaire Barre/Haltères',muscles:'Deltoïdes · Triceps',type:'compound',sets:4,reps:repsMain,rest:'2-3 min',note:'Debout ou assis · Arc lombaire neutre',isWeakBoost:isWeak('epaules')},
+        {name:'Écarté haltères à plat',muscles:'Pectoraux · Deltoïdes ant.',type:'isolation',sets:3,reps:'12-15',rest:'90s',note:'Amplitude maximale · Légère flexion coude · Étirement en bas',isWeakBoost:isWeak('pectoraux')},
+        {name:'Élévations latérales Haltères',muscles:'Deltoïdes latéraux',type:'isolation',sets:isWeak('epaules')?4:3,reps:'15-20',rest:'60s',note:'Coude légèrement fléchi · Poucets vers bas · Monter jusqu\'à l\'épaule',isWeakBoost:isWeak('epaules')},
+        {name:'Extension triceps poulie haute',muscles:'Triceps',type:'isolation',sets:3,reps:'12-15',rest:'60s',note:'Coudes fixes · Extension complète',isWeakBoost:isWeak('triceps')},
+        ...(isWeak('epaules')?[{name:'Face pulls poulie',muscles:'Deltoïdes post. · Rhomboïdes',type:'isolation',sets:3,reps:'15-20',rest:'60s',note:'Essentiel pour la santé des épaules · Corde à hauteur des yeux',isWeakBoost:true}]:[]),
+      ];
+    },
+    pull(goal,niv,weakMs){
+      const heavy=goal==='bulk'||goal==='force';
+      return[
+        {name:'Tractions (ou Lat Pulldown)',muscles:'Grand dorsal · Biceps',type:'compound',sets:4,reps:niv==='debutant'?'6-8 aidé':'6-10',rest:'2-3 min',note:'Prise légèrement + large que les épaules · Tirer jusqu\'au menton',isWeakBoost:isWeak('dos')},
+        {name:'Rowing Barre (Penché)',muscles:'Dos entier · Biceps · Rhomboïdes',type:'compound',sets:heavy?5:4,reps:heavy?'5-6':'8-10',rest:'2-3 min',note:'Dos plat obligatoire · Coudes le long du corps · Tirer vers nombril',isWeakBoost:isWeak('dos')},
+        {name:'Rowing Haltère 1 bras',muscles:'Grand dorsal · Biceps',type:'compound',sets:3,reps:'10-12',rest:'90s',note:'Point d\'appui sur banc · Amplitude maximale · Rotation épaule en bas',isWeakBoost:isWeak('dos')},
+        {name:'Tirage verticale devant/derrière',muscles:'Grand dorsal · Biceps',type:'compound',sets:3,reps:'10-12',rest:'90s',note:'Alternative si pas de barres de traction',isWeakBoost:isWeak('dos')},
+        {name:'Curl Barre EZ',muscles:'Biceps',type:'isolation',sets:isWeak('biceps')?4:3,reps:'10-12',rest:'60-90s',note:'Coudes fixes le long du corps · Supination maximale en haut',isWeakBoost:isWeak('biceps')},
+        {name:'Curl Haltères alterné',muscles:'Biceps · Brachio-radial',type:'isolation',sets:3,reps:'10-12',rest:'60s',note:'Supination pendant le mouvement',isWeakBoost:isWeak('biceps')},
+        {name:'Shrugs Haltères ou Barre',muscles:'Trapèzes',type:'isolation',sets:isWeak('trapeze')?4:3,reps:'12-15',rest:'60s',note:'Épaules vers les oreilles · Pas de rotation',isWeakBoost:isWeak('trapeze')},
+      ];
+    },
+    legs(goal,niv,weakMs){
+      const heavy=goal==='bulk'||goal==='force';
+      return[
+        {name:'Squat Barre (Dos)',muscles:'Quadriceps · Fessiers · Ischio · Dos',type:'compound',sets:heavy?5:4,reps:heavy?'5-6':'8-10',rest:'3-4 min',note:'Descente jusqu\'à parallèle minimum · Genoux dans l\'axe des pieds · Dos droit',isWeakBoost:isWeak('quadriceps')||isWeak('fessiers')},
+        {name:'Presse à Cuisses 45°',muscles:'Quadriceps · Fessiers',type:'compound',sets:4,reps:'10-12',rest:'2-3 min',note:'Pieds hauts = fessiers · Pieds bas = quads · Genoux pas en hyperextension',isWeakBoost:isWeak('quadriceps')},
+        {name:'Fentes Haltères (marchées)',muscles:'Quadriceps · Fessiers · Ischio',type:'compound',sets:3,reps:'10 par jambe',rest:'2 min',note:'Grand pas en avant · Genou arrière près du sol · Tronc droit',isWeakBoost:isWeak('fessiers')},
+        {name:'Leg Curl Machine (Allongé)',muscles:'Ischio-jambiers',type:'isolation',sets:isWeak('ischio')?4:3,reps:'12-15',rest:'90s',note:'Amplitude complète · Contrôle en retour · Priorité si ischio = point faible',isWeakBoost:isWeak('ischio')},
+        {name:'Hip Thrust Barre',muscles:'Fessiers · Ischio',type:'compound',sets:isWeak('fessiers')?4:3,reps:'10-12',rest:'2 min',note:'Extension maximale hanche en haut · Contraction fessiers 1s',isWeakBoost:isWeak('fessiers')},
+        {name:'Leg Extension Machine',muscles:'Quadriceps',type:'isolation',sets:3,reps:'15-20',rest:'60s',note:'Finisher · Toujours en fin de séance · Douleur genou = stop',isWeakBoost:isWeak('quadriceps')},
+        {name:'Mollets debout (machine ou barre)',muscles:'Gastrocnémiens · Soléaire',type:'isolation',sets:isWeak('mollets')?4:3,reps:'15-20',rest:'60s',note:'Amplitude complète · Talon jusqu\'en bas · 1s en haut',isWeakBoost:isWeak('mollets')},
+        {name:'Romanian Deadlift (RDL)',muscles:'Ischio-jambiers · Fessiers · Lombaires',type:'compound',sets:4,reps:'8-10',rest:'2-3 min',note:'Dos droit obligatoire · Ressentir l\'étirement ischio · Genoux légèrement fléchis',isWeakBoost:isWeak('ischio')},
+      ];
+    },
+    chestTriceps(goal,niv,weakMs){
+      return[
+        {name:'Développé couché Barre',muscles:'Pectoraux · Triceps · Deltoïdes ant.',type:'compound',sets:goal==='bulk'?5:4,reps:goal==='bulk'?'6-8':'8-10',rest:'2-3 min',note:'Mouvement roi des pectoraux',isWeakBoost:isWeak('pectoraux')},
+        {name:'Développé incliné Haltères',muscles:'Pectoraux sup. · Deltoïdes',type:'compound',sets:4,reps:'10-12',rest:'2 min',note:'30-45° d\'inclinaison optimal',isWeakBoost:isWeak('pectoraux')},
+        {name:'Écarté Poulie Croisée',muscles:'Pectoraux (contraction)',type:'isolation',sets:3,reps:'12-15',rest:'90s',note:'Contraction maximale au centre',isWeakBoost:isWeak('pectoraux')},
+        {name:'Dips lestés (ou barre)',muscles:'Pectoraux inf. · Triceps',type:'compound',sets:3,reps:'8-12',rest:'2 min',note:'Penché avant = pecto · Droit = triceps',isWeakBoost:isWeak('triceps')},
+        {name:'Extension triceps poulie haute (corde)',muscles:'Triceps (all 3 heads)',type:'isolation',sets:3,reps:'12-15',rest:'60s',note:'Déployer complètement les deux mains en bas',isWeakBoost:isWeak('triceps')},
+        {name:'French Press (Barre EZ)',muscles:'Triceps long',type:'isolation',sets:isWeak('triceps')?3:2,reps:'12-15',rest:'60s',note:'Coudes fixes pointés vers le plafond',isWeakBoost:isWeak('triceps')},
+      ];
+    },
+    backBiceps(goal,niv,weakMs){
+      return[
+        {name:'Tractions Pronation large',muscles:'Grand dorsal · Biceps',type:'compound',sets:4,reps:niv==='debutant'?'6-8 aidé':'8-10',rest:'2-3 min',note:'Mouvement fondamental du dos · Chin-up si trop difficile',isWeakBoost:isWeak('dos')},
+        {name:'Soulevé de terre Roumain (RDL)',muscles:'Ischio · Fessiers · Dos',type:'compound',sets:4,reps:'8-10',rest:'3 min',note:'Dos plat · Hanches en arrière · Barre le long du tibia',isWeakBoost:isWeak('dos')},
+        {name:'Rowing haltère 1 bras',muscles:'Grand dorsal · Biceps',type:'compound',sets:4,reps:'10-12',rest:'90s',note:'Amplitude maximale · Rotation épaule basse',isWeakBoost:isWeak('dos')},
+        {name:'Tirage horizontal poulie',muscles:'Rhomboïdes · Trapèzes',type:'compound',sets:3,reps:'12-15',rest:'90s',note:'Coudes le long du corps · Omoplate en retraction',isWeakBoost:isWeak('dos')},
+        {name:'Curl Barre EZ',muscles:'Biceps',type:'isolation',sets:isWeak('biceps')?4:3,reps:'10-12',rest:'60s',note:'Coudes fixes · Supination complète',isWeakBoost:isWeak('biceps')},
+        {name:'Curl Concentré Haltère',muscles:'Biceps (pic)',type:'isolation',sets:2,reps:'12-15',rest:'60s',note:'Finisher biceps · Contraction maximale en haut',isWeakBoost:isWeak('biceps')},
+      ];
+    },
+    shouldersCore(goal,niv,weakMs){
+      return[
+        {name:'Développé militaire Haltères',muscles:'Deltoïdes · Triceps',type:'compound',sets:4,reps:'8-10',rest:'2 min',note:'Assis ou debout · Arc neutre · Pointer coudes en avant',isWeakBoost:isWeak('epaules')},
+        {name:'Élévations latérales',muscles:'Deltoïdes latéraux',type:'isolation',sets:isWeak('epaules')?4:3,reps:'15-20',rest:'60s',note:'Mouvement clé pour la largeur des épaules',isWeakBoost:isWeak('epaules')},
+        {name:'Oiseau (élévations penchées)',muscles:'Deltoïdes post.',type:'isolation',sets:3,reps:'15-20',rest:'60s',note:'Penché à 90° · Coudes légèrement fléchis · Pas de balancé',isWeakBoost:isWeak('epaules')},
+        {name:'Face pulls corde',muscles:'Deltoïdes post. · Rotateurs',type:'isolation',sets:3,reps:'15-20',rest:'60s',note:'Santé épaule · Incontournable',isWeakBoost:isWeak('epaules')},
+        {name:'Planche Isométrique',muscles:'Core · Transverse',type:'isolation',sets:4,reps:'45-60 sec',rest:'45s',note:'Gainage neutre · Pas de cambrure · Respiration',isWeakBoost:isWeak('abdos')},
+        {name:'Crunch Bicycle',muscles:'Abdominaux obliques',type:'isolation',sets:3,reps:'20 par côté',rest:'45s',note:'Rotation coude-genou opposés · Lent et contrôlé',isWeakBoost:isWeak('abdos')},
+        {name:'Relevé de jambes suspendu',muscles:'Abdominaux bas',type:'isolation',sets:isWeak('abdos')?4:3,reps:'12-15',rest:'60s',note:'À la barre · Pas de balancé · Contraction abdos',isWeakBoost:isWeak('abdos')},
+      ];
+    },
+    shouldersArms(niv,weakMs){
+      return[
+        {name:'Développé militaire Barre',muscles:'Deltoïdes · Triceps',type:'compound',sets:4,reps:'8-10',rest:'2 min',note:'Mouvement fondamental épaules',isWeakBoost:isWeak('epaules')},
+        {name:'Élévations latérales lourdes',muscles:'Deltoïdes latéraux',type:'isolation',sets:4,reps:'12-15',rest:'60s',note:'Légère triche autorisée · 2-3 drop sets',isWeakBoost:isWeak('epaules')},
+        {name:'Curl Haltères incliné',muscles:'Biceps (étirement)',type:'isolation',sets:isWeak('biceps')?4:3,reps:'10-12',rest:'60s',note:'Banc incliné 45° · Étirement maximal biceps',isWeakBoost:isWeak('biceps')},
+        {name:'Curl Marteau Haltères',muscles:'Brachio-radial · Biceps',type:'isolation',sets:3,reps:'12-15',rest:'60s',note:'Prise neutre · Bon pour l\'épaisseur du bras',isWeakBoost:isWeak('biceps')},
+        {name:'Triceps Dips au banc',muscles:'Triceps',type:'compound',sets:3,reps:'12-15',rest:'90s',note:'Pieds surélevés si trop facile · Lestés si très facile',isWeakBoost:isWeak('triceps')},
+        {name:'Extension triceps 1 bras',muscles:'Triceps (chef long)',type:'isolation',sets:isWeak('triceps')?3:2,reps:'12-15',rest:'60s',note:'Au-dessus de la tête · Coude fixe',isWeakBoost:isWeak('triceps')},
+      ];
+    },
+    shouldersTraps(niv,weakMs){
+      return[
+        {name:'Développé militaire Barre (lourd)',muscles:'Deltoïdes · Triceps',type:'compound',sets:5,reps:'5-6',rest:'3 min',note:'Mouvement principal épaules · Améliorations hebdomadaires',isWeakBoost:isWeak('epaules')},
+        {name:'Élévations latérales (séries géantes)',muscles:'Deltoïdes latéraux',type:'isolation',sets:5,reps:'15-20',rest:'45s',note:'100 reps totales par séance recommandées',isWeakBoost:isWeak('epaules')},
+        {name:'Oiseau sur banc incliné',muscles:'Deltoïdes post.',type:'isolation',sets:4,reps:'15-20',rest:'60s',note:'Omoplate en rétraction',isWeakBoost:isWeak('epaules')},
+        {name:'Shrugs Barre (lourd)',muscles:'Trapèzes supérieurs',type:'isolation',sets:isWeak('trapeze')?5:4,reps:'10-12',rest:'90s',note:'Charge maximale · Pas de rotation · Maintien 1s en haut',isWeakBoost:isWeak('trapeze')},
+        {name:'Upright Row',muscles:'Trapèzes · Deltoïdes',type:'compound',sets:3,reps:'12-15',rest:'60s',note:'Prise serrée · Coudes au-dessus des mains',isWeakBoost:isWeak('trapeze')},
+        {name:'Face pulls (accessoire)',muscles:'Deltoïdes post. · Rotation externe',type:'isolation',sets:4,reps:'20',rest:'45s',note:'Santé épaule obligatoire en bulk',isWeakBoost:false},
+      ];
+    },
+    armsCore(niv,weakMs){
+      return[
+        {name:'Curl Barre EZ (lourd)',muscles:'Biceps',type:'isolation',sets:4,reps:'8-10',rest:'90s',note:'Surcharge progressive · Note la charge chaque semaine',isWeakBoost:isWeak('biceps')},
+        {name:'Curl Incliné Haltères',muscles:'Biceps (chef long)',type:'isolation',sets:3,reps:'10-12',rest:'60s',note:'Étirement maximal en bas',isWeakBoost:isWeak('biceps')},
+        {name:'Curl Concentré',muscles:'Biceps (pic)',type:'isolation',sets:3,reps:'12-15',rest:'60s',note:'Finisher · Contraction isométrique en haut 1s',isWeakBoost:isWeak('biceps')},
+        {name:'Dips lestés (triceps)',muscles:'Triceps · Pectoraux',type:'compound',sets:4,reps:'8-10',rest:'2 min',note:'Corps droit = triceps · Ajouter du poids sur les hanches',isWeakBoost:isWeak('triceps')},
+        {name:'Extension poulie haute (barre droite)',muscles:'Triceps (all)',type:'isolation',sets:4,reps:'12-15',rest:'60s',note:'2 drops sets en fin · Brûlure maximale',isWeakBoost:isWeak('triceps')},
+        {name:'Ab Wheel Rollout',muscles:'Core · Abdos · Lombaires',type:'isolation',sets:3,reps:'10-12',rest:'90s',note:'Genoux au sol pour débutants · Dos plat',isWeakBoost:isWeak('abdos')},
+        {name:'Dragon Flag',muscles:'Abdos · Core complet',type:'isolation',sets:isWeak('abdos')?3:2,reps:'6-8',rest:'90s',note:'Exercice avancé · Adapter selon niveau',isWeakBoost:isWeak('abdos')},
+      ];
+    },
+    squatDay(niv){
+      const sets=niv==='avance'?6:5;
+      return[
+        {name:'Back Squat (Barre)',muscles:'Quadriceps · Fessiers · Dos',type:'compound',sets,reps:'5',rest:'4-5 min',note:'MOUVEMENT PRINCIPAL · Descente en 3s · Explosion en montée',isWeakBoost:false},
+        {name:'Pause Squat (2s bas)',muscles:'Quadriceps · Fessiers',type:'compound',sets:3,reps:'3',rest:'3 min',note:'60-70% 1RM · Développe la force en bas',isWeakBoost:false},
+        {name:'Leg Press',muscles:'Quadriceps · Fessiers',type:'compound',sets:3,reps:'8-10',rest:'2 min',note:'Accessoire · Pieds hauts et larges',isWeakBoost:false},
+        {name:'Romanian Deadlift',muscles:'Ischio · Fessiers · Lombaires',type:'compound',sets:3,reps:'8',rest:'2 min',note:'Accessoire ischio · Dos plat absolu',isWeakBoost:false},
+        {name:'Planche + Gainage anti-rotation',muscles:'Core · Abdos',type:'isolation',sets:4,reps:'45s',rest:'45s',note:'Gainage spécifique powerlifting',isWeakBoost:false},
+      ];
+    },
+    benchDay(niv){
+      return[
+        {name:'Développé couché Barre',muscles:'Pectoraux · Triceps · Deltoïdes ant.',type:'compound',sets:5,reps:'5',rest:'4-5 min',note:'MOUVEMENT PRINCIPAL · Barre touche sternum · Explosion',isWeakBoost:false},
+        {name:'Développé couché prise serrée',muscles:'Triceps · Pectoraux',type:'compound',sets:3,reps:'6-8',rest:'3 min',note:'Accessoire triceps powerlifting · Prise = largeur épaules',isWeakBoost:false},
+        {name:'Dips lestés',muscles:'Triceps · Pectoraux inf.',type:'compound',sets:3,reps:'8-10',rest:'2 min',note:'Ajouter 10-20kg · Progression hebdomadaire',isWeakBoost:false},
+        {name:'Face pulls (santé épaules)',muscles:'Deltoïdes post. · Rotateurs',type:'isolation',sets:4,reps:'20',rest:'45s',note:'OBLIGATOIRE en powerlifting · Prévention blessures',isWeakBoost:false},
+        {name:'Curl Barre (accessoire)',muscles:'Biceps',type:'isolation',sets:3,reps:'10-12',rest:'60s',note:'Balance musculaire avant/arrière',isWeakBoost:false},
+      ];
+    },
+    deadliftDay(niv){
+      return[
+        {name:'Soulevé de Terre Conventionnel',muscles:'Dos · Fessiers · Ischio · Quadriceps',type:'compound',sets:niv==='avance'?5:4,reps:'3-5',rest:'5 min',note:'MOUVEMENT PRINCIPAL · Barre contre le tibia · Hanches puis épaules',isWeakBoost:false},
+        {name:'Deficit Deadlift (2-4cm)',muscles:'Dos · Jambes',type:'compound',sets:3,reps:'4',rest:'3 min',note:'Développe la force initiale en bas',isWeakBoost:false},
+        {name:'Good Morning',muscles:'Ischio-jambiers · Lombaires',type:'compound',sets:3,reps:'10',rest:'2 min',note:'Poids léger · Dos en légère flexion',isWeakBoost:false},
+        {name:'Hyperextensions',muscles:'Lombaires · Fessiers',type:'isolation',sets:4,reps:'12-15',rest:'60s',note:'Avec poids sur la poitrine si facile',isWeakBoost:false},
+        {name:'Gainage Lombaires (Superman)',muscles:'Lombaires',type:'isolation',sets:3,reps:'15',rest:'45s',note:'Maintien 2s en haut · Fondamental powerlifting',isWeakBoost:false},
+      ];
+    },
+    ohpDay(niv){
+      return[
+        {name:'Press Militaire Barre (debout)',muscles:'Deltoïdes · Triceps',type:'compound',sets:5,reps:'5',rest:'4 min',note:'MOUVEMENT PRINCIPAL · Menton rentré · Gainage total',isWeakBoost:false},
+        {name:'Push Press (avec élan jambes)',muscles:'Deltoïdes · Jambes · Triceps',type:'compound',sets:3,reps:'4',rest:'3 min',note:'Pour dépasser le point de blocage',isWeakBoost:false},
+        {name:'Chin-ups',muscles:'Grand dorsal · Biceps',type:'compound',sets:4,reps:'6-8',rest:'2 min',note:'Accessoire pull en OHP day',isWeakBoost:false},
+        {name:'Rowing barre prise supination',muscles:'Biceps · Dos',type:'compound',sets:3,reps:'8',rest:'2 min',note:'Balance poussée/tirage',isWeakBoost:false},
+        {name:'Élévations latérales',muscles:'Deltoïdes lat.',type:'isolation',sets:3,reps:'15',rest:'45s',note:'Accessoire épaules',isWeakBoost:false},
+      ];
+    },
+    fullBodyA(goal,niv,extra,weakMs){
+      return[
+        {name:'Squat Barre',muscles:'Quadriceps · Fessiers · Core',type:'compound',sets:4,reps:'6-8',rest:'3 min',note:'Composé roi · Tempo 3-1-1',isWeakBoost:isWeak('quadriceps')},
+        {name:'Développé couché Haltères',muscles:'Pectoraux · Triceps',type:'compound',sets:4,reps:'8-10',rest:'2 min',note:'Amplitude complète',isWeakBoost:isWeak('pectoraux')},
+        {name:'Tractions / Lat Pulldown',muscles:'Grand dorsal · Biceps',type:'compound',sets:4,reps:'8-10',rest:'2 min',note:'Mouvement de tirage vertical',isWeakBoost:isWeak('dos')},
+        {name:'Développé militaire Haltères',muscles:'Deltoïdes · Triceps',type:'compound',sets:3,reps:'10-12',rest:'90s',note:'',isWeakBoost:isWeak('epaules')},
+        {name:'Curl Barre EZ',muscles:'Biceps',type:'isolation',sets:3,reps:'10-12',rest:'60s',note:'',isWeakBoost:isWeak('biceps')},
+        {name:'Planche',muscles:'Core',type:'isolation',sets:3,reps:'45s',rest:'45s',note:'',isWeakBoost:isWeak('abdos')},
+      ];
+    },
+    fullBodyB(goal,niv,extra,weakMs){
+      return[
+        {name:'Romanian Deadlift',muscles:'Ischio · Fessiers · Dos',type:'compound',sets:4,reps:'6-8',rest:'3 min',note:'Dos plat · Étirement ischio',isWeakBoost:isWeak('ischio')},
+        {name:'Développé incliné Barre',muscles:'Pectoraux sup. · Triceps',type:'compound',sets:4,reps:'8-10',rest:'2 min',note:'30-45° inclinaison',isWeakBoost:isWeak('pectoraux')},
+        {name:'Rowing Barre (penché)',muscles:'Dos · Biceps',type:'compound',sets:4,reps:'8-10',rest:'2 min',note:'Coudes le long du corps',isWeakBoost:isWeak('dos')},
+        {name:'Fentes marchées Haltères',muscles:'Quadriceps · Fessiers',type:'compound',sets:3,reps:'12 par jambe',rest:'90s',note:'',isWeakBoost:isWeak('fessiers')},
+        {name:'Extension triceps poulie',muscles:'Triceps',type:'isolation',sets:3,reps:'12-15',rest:'60s',note:'',isWeakBoost:isWeak('triceps')},
+        {name:'Crunch machine ou sol',muscles:'Abdominaux',type:'isolation',sets:3,reps:'15-20',rest:'45s',note:'',isWeakBoost:isWeak('abdos')},
+      ];
+    },
+    fullBodyHeavy(niv,weakMs){
+      return[
+        {name:'Back Squat (5×5)',muscles:'Quadriceps · Fessiers',type:'compound',sets:5,reps:'5',rest:'4 min',note:'Programme 5×5 · Ajouter 2.5kg/semaine',isWeakBoost:false},
+        {name:'Développé couché (5×5)',muscles:'Pectoraux · Triceps',type:'compound',sets:5,reps:'5',rest:'4 min',note:'Progression linéaire obligatoire',isWeakBoost:false},
+        {name:'Rowing Barre (5×5)',muscles:'Dos · Biceps',type:'compound',sets:5,reps:'5',rest:'3 min',note:'Base force du dos',isWeakBoost:false},
+        {name:'Soulevé de Terre (1×5)',muscles:'Dos · Jambes · Global',type:'compound',sets:1,reps:'5',rest:'5 min',note:'1 seule série lourde · Jours alternés avec squat',isWeakBoost:false},
+        {name:'Gainage Planche',muscles:'Core',type:'isolation',sets:3,reps:'60s',rest:'45s',note:'Fin de séance',isWeakBoost:false},
+      ];
+    },
+    fullBodyVolume(niv,weakMs){
+      return[
+        {name:'Goblet Squat Kettlebell',muscles:'Quadriceps · Fessiers',type:'compound',sets:4,reps:'12',rest:'2 min',note:'Excellente posture · Idéal pour débutants',isWeakBoost:false},
+        {name:'Développé haltères (banc plat)',muscles:'Pectoraux · Triceps',type:'compound',sets:4,reps:'10-12',rest:'90s',note:'',isWeakBoost:false},
+        {name:'Tirage horizontal machine',muscles:'Dos moyen',type:'compound',sets:4,reps:'12',rest:'90s',note:'',isWeakBoost:false},
+        {name:'Hip Thrust',muscles:'Fessiers',type:'compound',sets:4,reps:'12',rest:'90s',note:'',isWeakBoost:false},
+        {name:'Élévations latérales',muscles:'Deltoïdes lat.',type:'isolation',sets:3,reps:'15',rest:'60s',note:'',isWeakBoost:false},
+        {name:'Curl + Extension (superset)',muscles:'Biceps + Triceps',type:'isolation',sets:3,reps:'12',rest:'60s',note:'Superset antagoniste = gain de temps',isWeakBoost:false},
+      ];
+    },
+    fullBodyPump(niv,weakMs){
+      return[
+        {name:'Hack Squat ou Leg Press',muscles:'Quadriceps',type:'compound',sets:4,reps:'15',rest:'90s',note:'Pump et sensation musculaire',isWeakBoost:isWeak('quadriceps')},
+        {name:'Écarté poulie croisée',muscles:'Pectoraux',type:'isolation',sets:4,reps:'15',rest:'60s',note:'Contraction maximale au centre',isWeakBoost:isWeak('pectoraux')},
+        {name:'Tirage poulie haute',muscles:'Dos large',type:'compound',sets:4,reps:'15',rest:'60s',note:'',isWeakBoost:isWeak('dos')},
+        {name:'Leg Curl machine',muscles:'Ischio-jambiers',type:'isolation',sets:3,reps:'15',rest:'60s',note:'',isWeakBoost:isWeak('ischio')},
+        {name:'Élévations lat. drop sets',muscles:'Deltoïdes',type:'isolation',sets:3,reps:'15+15+15',rest:'60s',note:'3 poids différents enchaînés',isWeakBoost:isWeak('epaules')},
+        {name:'Mollets debout',muscles:'Mollets',type:'isolation',sets:4,reps:'20',rest:'45s',note:'',isWeakBoost:isWeak('mollets')},
+      ];
+    },
+    pumpWeak(niv,weakMs){
+      const base=[
+        {name:'Leg Extension machine',muscles:'Quadriceps',type:'isolation',sets:4,reps:'15-20',rest:'60s',note:'',isWeakBoost:false},
+        {name:'Écarté haltères plat',muscles:'Pectoraux',type:'isolation',sets:4,reps:'15',rest:'60s',note:'',isWeakBoost:false},
+        {name:'Curl concentré',muscles:'Biceps',type:'isolation',sets:4,reps:'12',rest:'60s',note:'',isWeakBoost:false},
+        {name:'Planche latérale',muscles:'Obliques · Core',type:'isolation',sets:3,reps:'45s par côté',rest:'30s',note:'',isWeakBoost:false},
+      ];
+      weakMs.forEach(m=>{
+        const extras={
+          pectoraux:{name:'Pompes lestées (finisher)',muscles:'Pectoraux',type:'isolation',sets:3,reps:'15-20',rest:'60s',note:'Points faibles pectoraux — volume extra',isWeakBoost:true},
+          dos:{name:'Tirage horizontal buste penché',muscles:'Dos moyen · Rhomboïdes',type:'compound',sets:3,reps:'15',rest:'60s',note:'Épaisseur du dos',isWeakBoost:true},
+          mollets:{name:'Mollets assis (soléaire)',muscles:'Soléaire',type:'isolation',sets:4,reps:'20-25',rest:'45s',note:'Amplitude maximale · Souvent négligé',isWeakBoost:true},
+        };
+        if(extras[m]) base.push(extras[m]);
+      });
+      return base;
+    },
+    upperForce(goal,niv,weakMs){
+      return[
+        {name:'Développé couché (Barre)',muscles:'Pectoraux · Triceps',type:'compound',sets:5,reps:'4-6',rest:'3-4 min',note:'Priorité force',isWeakBoost:isWeak('pectoraux')},
+        {name:'Rowing Barre',muscles:'Dos · Biceps',type:'compound',sets:5,reps:'4-6',rest:'3-4 min',note:'Balance poussée/tirage',isWeakBoost:isWeak('dos')},
+        {name:'Développé militaire Haltères',muscles:'Deltoïdes',type:'compound',sets:4,reps:'6-8',rest:'2 min',note:'',isWeakBoost:isWeak('epaules')},
+        {name:'Tractions lestées',muscles:'Grand dorsal · Biceps',type:'compound',sets:4,reps:'6-8',rest:'2 min',note:'Chin-up ou lat pull si débutant',isWeakBoost:isWeak('dos')},
+        {name:'Curl Barre EZ',muscles:'Biceps',type:'isolation',sets:3,reps:'10-12',rest:'60s',note:'',isWeakBoost:isWeak('biceps')},
+        {name:'Extension triceps',muscles:'Triceps',type:'isolation',sets:3,reps:'10-12',rest:'60s',note:'',isWeakBoost:isWeak('triceps')},
+      ];
+    },
+    lowerCore(goal,niv,weakMs){
+      return[
+        {name:'Back Squat',muscles:'Quadriceps · Fessiers',type:'compound',sets:5,reps:'4-6',rest:'3-4 min',note:'Mouvement principal',isWeakBoost:isWeak('quadriceps')},
+        {name:'Romanian Deadlift',muscles:'Ischio · Fessiers',type:'compound',sets:4,reps:'6-8',rest:'3 min',note:'',isWeakBoost:isWeak('ischio')},
+        {name:'Leg Press',muscles:'Quadriceps · Fessiers',type:'compound',sets:3,reps:'10-12',rest:'2 min',note:'',isWeakBoost:isWeak('quadriceps')},
+        {name:'Leg Curl',muscles:'Ischio-jambiers',type:'isolation',sets:3,reps:'12-15',rest:'90s',note:'',isWeakBoost:isWeak('ischio')},
+        {name:'Gainage complexe (planche + lat)',muscles:'Core complet',type:'isolation',sets:4,reps:'45s',rest:'30s',note:'',isWeakBoost:isWeak('abdos')},
+        {name:'Mollets debout',muscles:'Mollets',type:'isolation',sets:4,reps:'15-20',rest:'45s',note:'',isWeakBoost:isWeak('mollets')},
+      ];
+    },
+    upperHyp(niv,weakMs){
+      return[
+        {name:'Développé haltères plat',muscles:'Pectoraux',type:'compound',sets:4,reps:'10-12',rest:'90s',note:'',isWeakBoost:isWeak('pectoraux')},
+        {name:'Tirage poulie verticale',muscles:'Dos · Biceps',type:'compound',sets:4,reps:'10-12',rest:'90s',note:'',isWeakBoost:isWeak('dos')},
+        {name:'Écarté haltères incliné',muscles:'Pectoraux sup.',type:'isolation',sets:3,reps:'12-15',rest:'60s',note:'',isWeakBoost:isWeak('pectoraux')},
+        {name:'Rowing haltère',muscles:'Dos moyen',type:'compound',sets:3,reps:'12',rest:'90s',note:'',isWeakBoost:isWeak('dos')},
+        {name:'Élévations latérales',muscles:'Deltoïdes',type:'isolation',sets:3,reps:'15-20',rest:'45s',note:'',isWeakBoost:isWeak('epaules')},
+        {name:'Face pulls',muscles:'Deltoïdes post.',type:'isolation',sets:3,reps:'20',rest:'45s',note:'',isWeakBoost:false},
+      ];
+    },
+    lowerHyp(niv,weakMs){
+      return[
+        {name:'Hack Squat ou Leg Press',muscles:'Quadriceps',type:'compound',sets:4,reps:'10-12',rest:'90s',note:'',isWeakBoost:isWeak('quadriceps')},
+        {name:'Hip Thrust Barre',muscles:'Fessiers',type:'compound',sets:4,reps:'10-12',rest:'90s',note:'',isWeakBoost:isWeak('fessiers')},
+        {name:'Leg Curl couché',muscles:'Ischio-jambiers',type:'isolation',sets:3,reps:'12-15',rest:'60s',note:'',isWeakBoost:isWeak('ischio')},
+        {name:'Fentes bulgares Haltères',muscles:'Quadriceps · Fessiers',type:'compound',sets:3,reps:'10 par jambe',rest:'90s',note:'Exercice avancé et très efficace',isWeakBoost:isWeak('fessiers')},
+        {name:'Leg Extension',muscles:'Quadriceps',type:'isolation',sets:3,reps:'15',rest:'60s',note:'Finisher',isWeakBoost:isWeak('quadriceps')},
+        {name:'Mollets assis machine',muscles:'Soléaire',type:'isolation',sets:4,reps:'15-20',rest:'45s',note:'',isWeakBoost:isWeak('mollets')},
+      ];
+    },
+    metabolic(goal,niv,weakMs){
+      const fcmax=220-S.age;
+      return[
+        {name:'Burpees',muscles:'Corps entier',type:'hiit',sets:4,reps:'12-15',rest:'45s',note:`FC cible : ${Math.round(fcmax*0.80)}-${Math.round(fcmax*0.90)} bpm`,isWeakBoost:false},
+        {name:'Squat Sauté',muscles:'Quadriceps · Fessiers · Cardio',type:'hiit',sets:4,reps:'15',rest:'30s',note:'',isWeakBoost:false},
+        {name:'Pompes Explosives',muscles:'Pectoraux · Triceps',type:'hiit',sets:3,reps:'15',rest:'45s',note:'',isWeakBoost:false},
+        {name:'Mountain Climbers',muscles:'Core · Épaules · Cardio',type:'hiit',sets:3,reps:'20 par côté',rest:'30s',note:'',isWeakBoost:false},
+        {name:'Fentes Sautées',muscles:'Jambes · Cardio',type:'hiit',sets:3,reps:'12 par côté',rest:'45s',note:'',isWeakBoost:false},
+        {name:'LISS final (tapis ou vélo)',muscles:'Cardio · FA',type:'cardio',sets:1,reps:'20 min',rest:'—',note:`FC maintenue : ${Math.round(fcmax*0.62)}-${Math.round(fcmax*0.70)} bpm · Filière aérobie`,isWeakBoost:false},
+      ];
+    },
+    cardioSession(fcmax){
+      return[
+        {name:'Échauffement vélo/tapis',muscles:'Cardio général',type:'cardio',sets:1,reps:'10 min',rest:'—',note:`FC montée progressive jusqu'à ${Math.round(fcmax*0.60)} bpm`,isWeakBoost:false},
+        {name:'HIIT Sprint-Marche',muscles:'Cardio · FAL · FA',type:'hiit',sets:10,reps:'30s sprint / 60s marche',rest:'—',note:`FC sprint : ${Math.round(fcmax*0.85)}-${Math.round(fcmax*0.92)} bpm`,isWeakBoost:false},
+        {name:'LISS (Low Intensity Steady State)',muscles:'Filière aérobie (FA)',type:'cardio',sets:1,reps:'20 min',rest:'—',note:`FC stable : ${Math.round(fcmax*0.60)}-${Math.round(fcmax*0.70)} bpm · Brûle-graisses optimal`,isWeakBoost:false},
+      ];
+    },
+    cardioCore(fcmax){
+      return[
+        {name:'Course ou vélo LISS',muscles:'Cardio · FA',type:'cardio',sets:1,reps:'30 min',rest:'—',note:`FC : ${Math.round(fcmax*0.60)}-${Math.round(fcmax*0.72)} bpm · Filière aérobie`,isWeakBoost:false},
+        {name:'Planche isométrique',muscles:'Core · Transverse',type:'isolation',sets:4,reps:'60s',rest:'30s',note:'',isWeakBoost:false},
+        {name:'Gainage latéral',muscles:'Obliques',type:'isolation',sets:3,reps:'45s par côté',rest:'30s',note:'',isWeakBoost:false},
+        {name:'Relevé de jambes',muscles:'Abdos bas',type:'isolation',sets:3,reps:'15',rest:'45s',note:'',isWeakBoost:false},
+        {name:'Crunch bicycle',muscles:'Abdos · Obliques',type:'isolation',sets:3,reps:'20 par côté',rest:'30s',note:'',isWeakBoost:false},
+      ];
+    },
+    weakPoint(niv,weakMs){
+      const exMap={
+        pectoraux:[{name:'Développé incliné haltères',muscles:'Pectoraux sup.',type:'compound',sets:5,reps:'10-12',rest:'90s',note:'Volume extra pectoraux',isWeakBoost:true},{name:'Écarté poulie croisée',muscles:'Pectoraux',type:'isolation',sets:4,reps:'15',rest:'60s',note:'',isWeakBoost:true}],
+        dos:[{name:'Tractions supination (chin-up)',muscles:'Grand dorsal · Biceps',type:'compound',sets:5,reps:'8-10',rest:'2 min',note:'Volume extra dos',isWeakBoost:true},{name:'Rowing poulie basse',muscles:'Dos moyen',type:'compound',sets:4,reps:'12',rest:'90s',note:'',isWeakBoost:true}],
+        epaules:[{name:'Élévations lat. série géante',muscles:'Deltoïdes lat.',type:'isolation',sets:6,reps:'15',rest:'45s',note:'Volume extra épaules',isWeakBoost:true},{name:'Oiseau avec haltères',muscles:'Deltoïdes post.',type:'isolation',sets:4,reps:'15',rest:'45s',note:'',isWeakBoost:true}],
+        fessiers:[{name:'Hip Thrust lourds',muscles:'Fessiers',type:'compound',sets:5,reps:'10-12',rest:'2 min',note:'Volume extra fessiers',isWeakBoost:true},{name:'Kickbacks poulie',muscles:'Fessiers',type:'isolation',sets:4,reps:'15 par jambe',rest:'45s',note:'',isWeakBoost:true}],
+        quadriceps:[{name:'Squat avant Haltères',muscles:'Quadriceps',type:'compound',sets:4,reps:'12',rest:'2 min',note:'Volume extra quads',isWeakBoost:true},{name:'Leg Extension drop set',muscles:'Quadriceps',type:'isolation',sets:4,reps:'15+15',rest:'60s',note:'',isWeakBoost:true}],
+        ischio:[{name:'Nordic Hamstring Curl',muscles:'Ischio-jambiers',type:'compound',sets:4,reps:'8',rest:'2 min',note:'Exercice roi des ischio',isWeakBoost:true},{name:'Leg Curl assis machine',muscles:'Ischio',type:'isolation',sets:4,reps:'12',rest:'60s',note:'',isWeakBoost:true}],
+        mollets:[{name:'Mollets debout lourds',muscles:'Gastrocnémiens',type:'isolation',sets:5,reps:'15-20',rest:'60s',note:'Volume extra mollets',isWeakBoost:true},{name:'Mollets assis machine',muscles:'Soléaire',type:'isolation',sets:4,reps:'20',rest:'45s',note:'',isWeakBoost:true}],
+        abdos:[{name:'Ab Wheel',muscles:'Abdos · Core',type:'isolation',sets:4,reps:'12',rest:'60s',note:'Volume extra abdos',isWeakBoost:true},{name:'Cable Crunch',muscles:'Grand droit',type:'isolation',sets:4,reps:'15',rest:'45s',note:'',isWeakBoost:true}],
+        biceps:[{name:'Curl incliné haltères',muscles:'Biceps (chef long)',type:'isolation',sets:4,reps:'10-12',rest:'60s',note:'Volume extra biceps',isWeakBoost:true},{name:'Curl Barre (21s)',muscles:'Biceps',type:'isolation',sets:3,reps:'7+7+7',rest:'90s',note:'7 bas + 7 haut + 7 complets',isWeakBoost:true}],
+        triceps:[{name:'Extension tri. 1 bras overhead',muscles:'Triceps (chef long)',type:'isolation',sets:4,reps:'12',rest:'60s',note:'Volume extra triceps',isWeakBoost:true},{name:'Dips au banc lestés',muscles:'Triceps',type:'compound',sets:4,reps:'12',rest:'90s',note:'',isWeakBoost:true}],
+      };
+      const result=[];
+      weakMs.forEach(m=>{if(exMap[m])result.push(...exMap[m]);});
+      return result.length?result:[{name:'Full Body accessoires',muscles:'Points faibles',type:'isolation',sets:3,reps:'15',rest:'60s',note:'Aucun point faible sélectionné — séance accessoires générale',isWeakBoost:false}];
+    },
+    intervales(fcmax){
+      return[
+        {name:'Échauffement course',muscles:'Cardio',type:'cardio',sets:1,reps:'10 min',rest:'—',note:`Montée progressive FC → ${Math.round(fcmax*0.65)} bpm`,isWeakBoost:false},
+        {name:'Fractionné 400m',muscles:'Filière FAL + FA',type:'hiit',sets:8,reps:'400m',rest:'2 min marche',note:`FC effort : ${Math.round(fcmax*0.85)}-${Math.round(fcmax*0.92)} bpm · Filière anaérobie lactique`,isWeakBoost:false},
+        {name:'Retour au calme',muscles:'Récupération',type:'cardio',sets:1,reps:'10 min',rest:'—',note:`FC descent sous ${Math.round(fcmax*0.55)} bpm`,isWeakBoost:false},
+      ];
+    },
+    vma(fcmax){
+      return[
+        {name:'Échauffement 15 min',muscles:'Cardio progressif',type:'cardio',sets:1,reps:'15 min',rest:'—',note:`Montée à ${Math.round(fcmax*0.70)} bpm · Éducatifs course`,isWeakBoost:false},
+        {name:'Répétitions 1000m @ 95% VMA',muscles:'FAL + FA · VO₂max',type:'hiit',sets:5,reps:'1000m',rest:'3 min récup trot',note:`FC : ${Math.round(fcmax*0.90)}-${Math.round(fcmax*0.95)} bpm · Zone rouge`,isWeakBoost:false},
+        {name:'Cool-down 10 min',muscles:'Récupération',type:'cardio',sets:1,reps:'10 min',rest:'—',note:'Trot + marche + étirements dynamiques',isWeakBoost:false},
+      ];
+    },
+    tempo(fcmax){
+      return[
+        {name:'Échauffement',muscles:'Cardio',type:'cardio',sets:1,reps:'10 min',rest:'—',note:`FC : ${Math.round(fcmax*0.65)} bpm`,isWeakBoost:false},
+        {name:'Tempo Run (seuil lactique)',muscles:'FA + FAL · Seuil anaérobie',type:'cardio',sets:1,reps:'35 min continu',rest:'—',note:`FC maintenue : ${Math.round(fcmax*0.80)}-${Math.round(fcmax*0.85)} bpm · Légèrement inconfortable`,isWeakBoost:false},
+        {name:'Retour au calme',muscles:'Récupération',type:'cardio',sets:1,reps:'10 min',rest:'—',note:'Marche + étirements mollets/ischio',isWeakBoost:false},
+      ];
+    },
+    longRun(fcmax){
+      return[
+        {name:'Sortie longue basse intensité',muscles:'Filière aérobie (FA) · Lipides',type:'cardio',sets:1,reps:'60-90 min',rest:'—',note:`FC : ${Math.round(fcmax*0.62)}-${Math.round(fcmax*0.70)} bpm · Conversation possible · Après 45 min : lipides = carburant principal`,isWeakBoost:false},
+        {name:'Strides finaux (×6)',muscles:'Neuromusculaire',type:'hiit',sets:6,reps:'80m accélération',rest:'2 min marche',note:'Conclure avec des accélérations légères pour stimuler le système nerveux',isWeakBoost:false},
+      ];
+    },
+    strengthEndurance(niv){
+      return[
+        {name:'Squat bulgare (Split squat)',muscles:'Quadriceps · Fessiers',type:'compound',sets:4,reps:'12 par jambe',rest:'90s',note:'Essentiel pour coureurs · Force unipodal',isWeakBoost:false},
+        {name:'Nordic Hamstring',muscles:'Ischio-jambiers',type:'compound',sets:3,reps:'8',rest:'2 min',note:'Prévention blessures ischio',isWeakBoost:false},
+        {name:'Hip Thrust',muscles:'Fessiers',type:'compound',sets:3,reps:'15',rest:'90s',note:'Force propulsion course',isWeakBoost:false},
+        {name:'Mollets debout lourds',muscles:'Gastrocnémiens',type:'isolation',sets:4,reps:'20',rest:'60s',note:'Fondamental coureurs',isWeakBoost:false},
+        {name:'Box Jumps',muscles:'Puissance jambes · FAA',type:'hiit',sets:4,reps:'8',rest:'2 min',note:'Filière anaérobie alactique · Développe la puissance',isWeakBoost:false},
+        {name:'Planche + Gainage anti-rotation',muscles:'Core stabilisateur',type:'isolation',sets:4,reps:'45s',rest:'30s',note:'Économie de course',isWeakBoost:false},
+      ];
+    },
+    cardioWeak(fcmax,weakMs){
+      return[
+        {name:'HIIT Cardio 20 min',muscles:'Cardio · FAL',type:'hiit',sets:10,reps:'30s sprint / 60s repos',rest:'—',note:`FC sprint : ${Math.round(fcmax*0.85)}-${Math.round(fcmax*0.90)} bpm`,isWeakBoost:false},
+        ...this.weakPoint('intermediaire',weakMs).slice(0,4),
+      ];
+    }
+  };
+}
+
+function renderWeekPanel(week,fcmax){
+  const calHtml=`<div class="week-cal">${week.days.map(d=>{
+    const col=d.color||'#eee';
+    const typeTag={train:'SALLE',sport:'SPORT',rest:'REPOS'}[d.type]||'REPOS';
+    const tagBg={train:col+'20',sport:'var(--endurance)20',rest:'#eee'}[d.type]||'#eee';
+    const tagCol={train:col,sport:'var(--endurance)',rest:'#bbb'}[d.type]||'#bbb';
+    return `<div class="wday ${d.type==='rest'?'rest-day':''}" style="${d.type!=='rest'?'background:'+col+'12;border:2px solid '+col+'30':''}">
+      <div class="wday-name">${d.name}</div>
+      <div class="wday-tag" style="background:${tagBg};color:${tagCol}">${typeTag}</div>
+      <div class="wday-label">${d.label}</div>
+      <div class="wday-dur">${d.dur}</div>
+    </div>`;
+  }).join('')}</div>`;
+
+  const trainDays=week.days.filter(d=>d.type==='train'&&d.exercises&&d.exercises.length);
+  const sessionsHtml=trainDays.map((d,i)=>`
+    <div class="session-block">
+      <div class="sb-header" onclick="toggleSB(this)">
+        <div><div class="sb-title">${d.name} — ${d.label}</div><div class="sb-meta">${d.detail}</div></div>
+        <div style="display:flex;align-items:center;gap:1rem;"><div class="sb-meta">${d.dur}</div><div style="font-size:1.2rem;transition:transform .3s" class="sb-arrow">▼</div></div>
+      </div>
+      <div class="sb-body ${i===0?'open':''}">
+        <div class="sb-body-inner">
+          <table class="ex-table">
+            <thead><tr><th style="width:30%">Exercice</th><th>Type</th><th>Séries</th><th>Reps</th><th>Repos</th><th>Notes technique</th></tr></thead>
+            <tbody>${d.exercises.map(e=>`
+              <tr style="${e.isWeakBoost?'border-left:3px solid var(--cut)':''}">
+                <td><div class="ex-name" style="${e.isWeakBoost?'color:var(--cut)':''}">${e.name} ${e.isWeakBoost?'⬆':''}${e.isStrongMaintain?'✓':''}</div><div class="ex-muscles">${e.muscles}</div></td>
+                <td><div class="ex-badge badge-${e.type}">${e.type}</div></td>
+                <td style="font-family:'JetBrains Mono',monospace;font-weight:500">${e.sets}</td>
+                <td style="font-family:'JetBrains Mono',monospace">${e.reps}</td>
+                <td style="font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--muted)">${e.rest}</td>
+                <td style="font-size:.75rem;color:var(--muted);font-style:italic">${e.note||'—'}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+          ${d.exercises.some(e=>e.isWeakBoost)?'<div style="font-size:.75rem;color:var(--cut);margin-top:.5rem;padding:.5rem;background:#fff0ed;border-radius:4px;">⬆ Volume supplémentaire appliqué sur tes points faibles sélectionnés</div>':''}
+        </div>
+      </div>
+    </div>`).join('');
+
+  return calHtml+sessionsHtml;
+}
+
+function toggleSB(header){
+  const body=header.nextElementSibling;
+  body.classList.toggle('open');
+  const arr=header.querySelector('.sb-arrow');
+  if(arr) arr.style.transform=body.classList.contains('open')?'rotate(180deg)':'';
+}
+
+// ── CARDIO ──
+function renderCardio(){
+  const fcmax=220-S.age;
+  const goal=S.goal;
+  const hasSport=S.sports.filter(s=>s!=='aucun').length>0;
+
+  const cardioPlans={
+    sec:[
+      {icon:'🔥',title:'LISS (Brûle-graisses)',desc:'La méthode reine pour brûler les graisses sans toucher au muscle. La filière aérobie utilise prioritairement les lipides comme substrat.',stats:[['Fréquence','3-4x/semaine'],['Durée','40-50 min'],['Intensité',`${Math.round(fcmax*0.60)}-${Math.round(fcmax*0.72)} bpm`],['Filière','Aérobie (FA)'],['Moment','Matin à jeun OU post-séance muscu'],['Exemple','Marche rapide inclinée · Vélo doux · Natation']]},
+      {icon:'⚡',title:'HIIT (Accélère le métabolisme)',desc:'Séances courtes et intenses. EPOC (Excess Post-exercise Oxygen Consumption) = brûlage calorique pendant 24-48h post-séance.',stats:[['Fréquence','2x/semaine max'],['Format','30s effort / 60s récup × 10-12'],['Intensité',`${Math.round(fcmax*0.85)}-${Math.round(fcmax*0.92)} bpm`],['Filière','FAL + FAA'],['Moment','Séance séparée ou post-muscul.'],['Durée totale','20-25 min']]},
+      {icon:'🚶',title:'NEAT (Activité non-sportive)',desc:'Non-Exercise Activity Thermogenesis. Augmenter ton NEAT quotidien est aussi efficace qu\'une séance de cardio pour la sèche.',stats:[['Objectif','10 000 pas/jour minimum'],['Actions','Escaliers · Vélo trajet · Marche déjeuner'],['Impact','+200-400 kcal/jour supplémentaires'],['Effort','Aucun impact sur récupération muscu'],['Outil','Podomètre ou smartphone'],['Priorité','HAUTE — souvent négligé']]},
+    ],
+    lean:[
+      {icon:'🏃',title:'Cardio modéré (maintien)',desc:'Cardio léger pour maintenir la santé cardiovasculaire sans hypothéquer la récupération musculaire. Volume minimal.',stats:[['Fréquence','1-2x/semaine'],['Durée','20-30 min'],['Intensité',`${Math.round(fcmax*0.60)}-${Math.round(fcmax*0.70)} bpm`],['Filière','Aérobie (FA)'],['Moment','Jours de repos'],['Exemple','Vélo doux · Natation · Marche rapide']]},
+      {icon:'💡',title:'Astuce Lean Bulk',desc:'Trop de cardio en lean bulk ampute ton surplus calorique. Priorité absolue à l\'entraînement de force. Le cardio est un outil de contrôle, pas un objectif.',stats:[['Cardio max','2 séances légères/sem'],['Priorité','Force > Cardio'],['Calories compensées','Ajuster l\'apport si + de 2 séances/sem'],['NEAT','Maintenir 8000 pas/jour minimum'],['Monitoring','Peser chaque semaine, même heure'],['Cible prise','0.5-1 kg muscle/mois max']]},
+    ],
+    bulk:[
+      {icon:'🚫',title:'Cardio minimal',desc:'En bulk, le cardio crée un déficit qui réduit ton surplus et ampute tes gains. Limite au strict minimum pour la santé cardiaque.',stats:[['Fréquence','1x/semaine max'],['Type','LISS uniquement · Pas de HIIT'],['Durée','20 min maximum'],['Intensité',`${Math.round(fcmax*0.55)}-${Math.round(fcmax*0.65)} bpm`],['Moment','Jours de repos'],['Exemple','Marche 20 min · Vélo très doux']]},
+      {icon:'🏥',title:'Santé cardiovasculaire',desc:'Même en bulk, maintenir un minimum d\'activité cardiaque est essentiel. Le coeur est un muscle — ne le néglige pas.',stats:[['Fréquence cardiaque repos','Cible < 60 bpm'],['Monitoring','Surveiller TA régulièrement'],['Option','GPP (General Physical Preparation)'],['Durée séance','15-20 min'],['Priorité','FAIBLE vs entraînement force'],['Note','Augmenter NEAT suffit souvent']]},
+    ],
+    recomp:[
+      {icon:'⚖️',title:'Cardio modéré (recomp)',desc:'Cardio modéré 2-3x/semaine pour créer le déficit sur les jours de repos tout en maintenant les calories d\'entraînement pour la synthèse protéique.',stats:[['Fréquence','2-3x/semaine'],['Durée','30-40 min'],['Intensité',`${Math.round(fcmax*0.62)}-${Math.round(fcmax*0.75)} bpm`],['Filière','Aérobie (FA)'],['Moment','Jours sans musculation'],['Exemple','Course légère · Vélo · Natation']]},
+    ],
+    force:[
+      {icon:'💪',title:'GPP (Préparation physique générale)',desc:'En force pure, le cardio doit améliorer la récupération sans fatiguer les filières neuromusculaires. Jamais le jour avant une séance lourde.',stats:[['Fréquence','1-2x/semaine'],['Type','LISS ou vélo doux uniquement'],['Durée','20-30 min'],['Intensité',`${Math.round(fcmax*0.55)}-${Math.round(fcmax*0.65)} bpm`],['Moment','Lendemain de grosse séance'],['Objectif','Récupération active · Pas de performance']]},
+    ],
+    endurance:[
+      {icon:'🏃',title:'Sortie longue (FA)',desc:'Colonne vertébrale de l\'endurance. Développe les mitochondries, la capillarisation et l\'économie de course. Substrat : lipides prioritaires après 45 min.',stats:[['Fréquence','1x/semaine'],['Durée','60-90 min (+10%/semaine)'],['Intensité',`${Math.round(fcmax*0.62)}-${Math.round(fcmax*0.70)} bpm`],['Filière','Aérobie (FA) dominante'],['Hydratation','500ml/30 min d\'effort'],['Nutrition','Gel ou dattes si > 75 min']]},
+      {icon:'⚡',title:'Fractionné (FAL)',desc:'Travail à haute intensité pour repousser le seuil lactique et améliorer le VO₂max. Filière anaérobie lactique sollicitée.',stats:[['Fréquence','1-2x/semaine'],['Format','8×400m ou 5×1000m'],['Intensité',`${Math.round(fcmax*0.85)}-${Math.round(fcmax*0.92)} bpm`],['Filière','FAL + FA'],['Récupération','2-3 min entre répétitions'],['Progression','Ajouter 1 rep ou -5s/rep/semaine']]},
+      {icon:'🎯',title:'Tempo Run (Seuil)',desc:'Course au seuil lactique — le point critique où la production d\'acide lactique accélère. Développe la capacité à maintenir des allures élevées.',stats:[['Fréquence','1x/semaine'],['Durée','25-40 min continu'],['Intensité',`${Math.round(fcmax*0.80)}-${Math.round(fcmax*0.85)} bpm`],['Filière','Seuil FAL/FA'],['Sensation','Légèrement inconfortable · 7/10'],['Allure','~20s/km plus lent que 10km race']]},
+    ],
+  };
+
+  const cards=cardioPlans[S.goal]||cardioPlans.recomp;
+  if(hasSport){
+    const sportCard={icon:'⚽',title:'Intégration sports pratiqués',desc:`Tes sports (${S.sports.filter(s=>s!=='aucun').join(', ')}) comptent comme cardio. Adapter le volume de cardio additionnel pour éviter le surentraînement.`,stats:[['Sports','Comptabilisés comme cardio'],['Ajustement','Réduire cardio additionnel de 30-50%'],['Récupération','48h entre sport intense et séance lourde'],['Nutrition','Compenser les kcal dépensées en sport'],['Périodisation','Réduire l\'intensité sport en période chargée'],['Monitoring','Surveiller FC repos et qualité sommeil']]};
+    cards.push(sportCard);
+  }
+
+  document.getElementById('cardio-plan').innerHTML=cards.map(c=>`
+    <div class="cp-card">
+      <div class="cp-icon">${c.icon}</div>
+      <div class="cp-title">${c.title}</div>
+      <div class="cp-desc">${c.desc}</div>
+      <div class="cp-stats">${c.stats.map(s=>`<div class="cp-stat"><span class="cp-stat-k">${s[0]}</span><span class="cp-stat-v">${s[1]}</span></div>`).join('')}</div>
+    </div>`).join('');
+
+  const cardioScienceMap={
+    sec:`<div class="sn-title">🔬 Physiologie du cardio — SÈCHE</div>LISS (60-70% FCmax) : <strong>filière aérobie (FA) dominante</strong> → lipides = substrat principal → lipolyse via adrénaline + glucagon. HIIT : filière FAL → EPOC élevé → brûlage post-séance 24-48h. Attention : cardio excessif → cortisol chronique élevé → catabolisme musculaire → maintenir protéines à 2.2g/kg.`,
+    bulk:`<div class="sn-title">🔬 Pourquoi minimiser le cardio en BULK</div>Chaque kcal dépensée en cardio réduit ton surplus anabolique. La priorité est de nourrir la <strong>filière FAA (ATP-PCr)</strong> lors des séances lourdes. La GH et la testostérone sont maximisées par les charges lourdes — pas par le cardio. 1 séance légère/semaine suffit pour la santé cardiaque.`,
+    endurance:`<div class="sn-title">🔬 Physio de l'endurance</div>Après 45 min à 65-70% FCmax : <strong>62% de l'énergie vient des lipides</strong> (filière FA). L'entraînement d'endurance stimule la <strong>biogenèse mitochondriale</strong> (PGC-1α) → plus de mitochondries → meilleure capacité oxydative. Le BDNF augmente → neuroplasticité, mémoire améliorées. VO₂max = indicateur clé de santé globale.`,
+    default:`<div class="sn-title">🔬 Filières & cardio</div>Le cardio sollicite les trois filières en séquence : FAA (0-10s), FAL (10s-3min), FA (> 3min). <strong>L'intensité détermine la filière dominante</strong>. À 60-70% FCmax : FA dominante, lipides = carburant. Au-dessus de 80% FCmax : FAL + FA → lactate, glucose. Le seuil lactique est le point d'inflexion entre les deux.`
+  };
+  document.getElementById('science-cardio').innerHTML=cardioScienceMap[S.goal]||cardioScienceMap.default;
+  document.getElementById('cardio-intro').textContent=`Plan cardio adapté à l'objectif ${goalNames[S.goal]} ${S.sports.filter(s=>s!=='aucun').length?'et à tes sports pratiqués':''}.`;
+}
+
+// ── ADVICE ──
+function renderAdvice(){
+  const fcmax=220-S.age;
+  const advices=[
+    {icon:'😴',title:'Sommeil — Priorité absolue',body:`La GH (Hormone de Croissance) est sécrétée à 70-80% pendant les phases de sommeil profond (3-4h après l'endormissement). 7-9h sont nécessaires pour la synthèse protéique et la récupération musculaire. Couche-toi à heure fixe pour optimiser le rythme circadien et le pic de cortisol matinal.`,hl:false},
+    {icon:'⏱️',title:'Récupération entre séances',body:`Attends 48h minimum entre deux séances ciblant le même groupe musculaire. Le surentraînement → cortisol chroniquement élevé → catabolisme. FC de repos > 5 bpm vs normale = signe de surentraînement. Écoute ton corps.`,hl:false},
+    {icon:'💊',title:'Supplémentation de base',body:`Créatine monohydrate : 5g/jour (augmente PCr musculaire +20% → force FAA). Vitamine D3 : 2000-4000 UI si peu de soleil → testostérone + immunité. Oméga-3 : 2-3g/j → anti-inflammatoire + récupération. Magnésium : 300-400mg/j → sommeil + récupération musculaire.`,hl:false},
+    {icon:'📈',title:'Progression obligatoire',body:`Sans surcharge progressive, pas d'adaptation. Chaque semaine : tente d'ajouter 2.5kg ou 1-2 reps par rapport à la semaine précédente. Note tes performances (carnet ou appli). La progression = signal anabolique → GH + IGF-1 + testostérone.`,hl:true},
+    {icon:'🧠',title:'Fonctions exécutives & sport',body:`L'entraînement régulier stimule la neurogenèse hippocampique via BDNF (+30% selon études). La planification de tes séances, la mémorisation des exercices et la flexibilité tactique sont des fonctions exécutives entraînées par le sport.`,hl:false},
+    {icon:'🏃',title:'Déload toutes les 4-6 semaines',body:`Après 4-6 semaines, planifie 1 semaine de déload : réduire le volume à 60% et l'intensité à 80%. Cette semaine de récupération = surcompensation → tu repars plus fort. Les adaptations se consolident pendant le repos, pas pendant l'effort.`,hl:false},
+  ];
+  document.getElementById('advice-grid').innerHTML=advices.map(a=>`
+    <div class="adv ${a.hl?'highlight':''}">
+      <div class="adv-icon">${a.icon}</div>
+      <div class="adv-title">${a.title}</div>
+      <div class="adv-body">${a.body}</div>
+    </div>`).join('');
+}
+
+function resetAll(){
+  document.querySelector('.form-shell').style.display='block';
+  document.getElementById('res').style.display='none';
+  showStep(0);
+  document.querySelectorAll('.mcell').forEach(c=>{c.classList.remove('weak','strong');});
+  document.querySelectorAll('.scell').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('.eq').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('.pill').forEach(c=>c.classList.remove('sel'));
+  document.querySelectorAll('.gc').forEach(c=>{c.classList.remove('sel');c.style.borderColor='';});
+  Object.assign(S,{prenom:'',age:0,genre:'',niveau:'intermediaire',taille:0,poids:0,goal:'',goalDelta:0,muscles:{},sports:[],equipement:[],jours:3,duree:60,activ:1.55});
+}
+</script>
+</body>
+</html>
